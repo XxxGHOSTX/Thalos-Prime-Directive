@@ -32,8 +32,6 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core.cis import CIS
-from interfaces.cli import CLI
-from interfaces.api import API
 
 
 def main():
@@ -69,9 +67,9 @@ def main():
     print()
     print("Initializing interfaces...")
     
-    # Create thin interface layers - delegate to CIS
-    cli = CLI(cis)
-    api = API(cis)
+    # Get interface layers from CIS (CIS owns all subsystems)
+    cli = cis.get_cli()
+    api = cis.get_api()
     
     print("✓ CLI initialized (thin delegation layer)")
     print("✓ API initialized (stateless REST interface)")
