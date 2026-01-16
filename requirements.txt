@@ -1,0 +1,26 @@
+# Thalos Prime v1.0 - Python Dependencies
+#
+# Runtime dependencies (none - pure Python stdlib)
+# Optional development dependencies:
+
+# Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Code Quality
+flake8>=6.0.0
+black>=23.0.0
+isort>=5.12.0
+mypy>=1.0.0
+
+# Documentation
+sphinx>=6.0.0
+sphinx-rtd-theme>=1.2.0
+
+# HTTP Server (for future web interface)
+flask>=3.0.0
+fastapi>=0.109.0
+uvicorn>=0.27.0
+
+# Note: Core Thalos Prime system requires only Python 3.12+ stdlib
+# All dependencies listed above are optional for development purposes
