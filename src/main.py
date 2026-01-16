@@ -40,10 +40,9 @@ def main():
     
     Establishes the control hierarchy:
     1. Create CIS (Central Intelligence System) - primary authority
-    2. Boot CIS - initializes all subsystems
-    3. Create thin interface layers (CLI, API)
-    4. Connect interfaces to CIS for delegation
-    5. Run CLI in interactive mode
+    2. Boot CIS - initializes all subsystems (Memory, CodeGen, CLI, API)
+    3. Retrieve interface layers from CIS for user interaction
+    4. Execute CLI commands with delegation to CIS subsystems
     """
     print("=== Thalos Prime v1.0 ===")
     print("Deterministic System Framework")
