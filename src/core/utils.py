@@ -49,13 +49,14 @@ class Result(Generic[T]):
         return self._value
     
     @property
-    def success(self) -> bool:
-        """Get success status"""
-        return self._success
-    
     def error(self) -> Optional[str]:
         """Get error message"""
         return self._error
+    
+    @property
+    def success(self) -> bool:
+        """Get success status"""
+        return self._success
     
     @classmethod
     def ok(cls, value: T) -> 'Result[T]':

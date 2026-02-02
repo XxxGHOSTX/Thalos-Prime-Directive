@@ -97,7 +97,7 @@ class TestResult:
         result = Result.fail("Error message")
         assert result.is_err()
         assert not result.is_ok()
-        assert result.error() == "Error message"
+        assert result.error == "Error message"
     
     def test_result_unwrap_or(self):
         """Test unwrap with default"""
