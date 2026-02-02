@@ -1,10 +1,14 @@
 # Thalos Prime Makefile
 # © 2026 Tony Ray Macier III. All rights reserved.
 
-.PHONY: help install install-dev test test-unit test-integration coverage lint format type-check clean docker-build docker-run all
+.PHONY: help install install-dev web web-dev test test-unit test-integration coverage lint format type-check clean docker-build docker-run docker-web all
 
 help:
 	@echo "Thalos Prime - Development Commands"
+	@echo ""
+	@echo "Quick Start:"
+	@echo "  make web            Launch web interface (production)"
+	@echo "  make web-dev        Launch web interface (development)"
 	@echo ""
 	@echo "Setup:"
 	@echo "  make install        Install production dependencies"
@@ -25,6 +29,7 @@ help:
 	@echo "Docker:"
 	@echo "  make docker-build   Build Docker image"
 	@echo "  make docker-run     Run Docker container"
+	@echo "  make docker-web     Run web interface in Docker"
 	@echo ""
 	@echo "Maintenance:"
 	@echo "  make clean          Clean build artifacts"
@@ -36,6 +41,14 @@ install:
 install-dev:
 	pip install -r requirements.txt
 	pip install -r requirements-dev.txt
+
+web:
+	@echo "🚀 Launching Thalos Prime Web Interface..."
+	python boot_thalos.py
+
+web-dev:
+	@echo "🚀 Launching Thalos Prime Web Interface (Development Mode)..."
+	THALOS_ENV=development THALOS_DEBUG=true python boot_thalos.py
 
 test:
 	pytest tests/ -v
@@ -71,10 +84,14 @@ security:
 	-safety check
 
 docker-build:
-	docker build -t thalos-prime:latest .
+	docker build -t thalos-prime:3.0 .
 
 docker-run:
-	docker run -p 8000:8000 thalos-prime:latest
+	docker run -p 8000:8000 thalos-prime:3.0
+
+docker-web:
+	@echo "🐳 Starting Thalos Prime in Docker..."
+	docker-compose up
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true

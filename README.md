@@ -1,8 +1,10 @@
 # Thalos Prime v3.0 🧬
 
-## Synthetic Biological Intelligence System
+## Synthetic Biological Intelligence System - Web Deployment
 
 **Where Silicon Meets Synapse. Where Code Becomes Consciousness.**
+
+> **Now optimized for web-based deployment!** Experience the immersive Matrix-style interface with one command.
 
 ---
 
@@ -34,136 +36,106 @@ The system operates under three immutable principles:
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Quick Start Guide - Web Deployment
 
 ### Prerequisites
 
 - **Python 3.12+** (required)
 - **4GB RAM** minimum (8GB recommended)
-- **pip** package manager
-- Modern web browser (for web interface)
+- **Modern web browser** (Chrome, Firefox, Safari, Edge)
+- Internet connection for dependency installation
 
-### Installation (2 minutes)
+### One-Command Deployment (⚡ FASTEST!)
+
+The easiest way to launch Thalos Prime:
+
+**Linux/macOS:**
+```bash
+./start_web.sh
+```
+
+**Windows:**
+```cmd
+start_web.bat
+```
+
+**Universal (All Platforms):**
+```bash
+python boot_thalos.py
+```
+
+This will automatically:
+- ✅ Check Python version (3.12+ required)
+- ✅ Install all dependencies
+- ✅ Create data directories
+- ✅ Configure environment
+- ✅ Start web server on http://localhost:8000
+- ✅ Auto-launch your browser to the interface
+
+**Expected result:** Your browser opens to an immersive Matrix-style interface!
+
+### Alternative: Manual Installation
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/XxxGHOSTX/ThalosPrime-v1.git
-cd ThalosPrime-v1
+git clone https://github.com/XxxGHOSTX/Thalos-Prime-Directive.git
+cd Thalos-Prime-Directive
 
-# 2. Install dependencies (optional - auto-installed on boot)
+# 2. Install dependencies
 pip install -r requirements.txt
+
+# 3. Launch web interface
+python boot_thalos.py
 ```
 
 ### Running the System
 
-#### Option 1: One-Command Boot (⚡ FASTEST - RECOMMENDED!)
+Thalos Prime v3.0 is optimized for **web-based deployment**. All interactions happen through the immersive browser interface.
 
-**Launch directly into the immersive Matrix interface:**
+#### Primary Method: Boot Script (Recommended)
 
 ```bash
 python boot_thalos.py
 ```
 
-This will:
-- ✅ Check and install dependencies automatically
-- ✅ Initialize all subsystems
-- ✅ Start the immersive web interface
-- ✅ Auto-launch browser to http://localhost:8000
-- ✅ Display live Matrix rain and Thalos entity
-- ✅ Enable unrestricted conversational AI
+This launches the complete system with:
+- Live Matrix code rain animation
+- Real-time neural activity visualization  
+- Interactive chatbot interface
+- System metrics dashboard
+- Auto-browser launch to http://localhost:8000
 
-**You'll see the Matrix-style interface with:**
-- Live code rain animation
-- Thalos silhouette entity background
-- Pull-out sidebar navigation
-- Real-time chat console
-- System status monitoring
-- UTC time display
-
-#### Option 2: Auto Web Deployment (Alternative)
-
-**Set up and launch web interface:**
-
-**Linux/macOS:**
-```bash
-./auto_web_deploy.sh
-```
-
-**Windows:**
-```bash
-auto_web_deploy.bat
-```
-
-**Universal (all platforms):**
-```bash
-python auto_web_deploy.py
-```
-
-This will:
-1. ✅ Check Python installation
-2. ✅ Create virtual environment
-3. ✅ Install all dependencies
-4. ✅ Configure environment
-5. ✅ Create data directories
-6. ✅ Verify installation
-7. ✅ Launch web interface on http://localhost:8000
-
-**Perfect for first-time users - just run and go!**
-
-#### Option 2: Web Interface (Manual)
-
-Experience the Matrix-style chatbot with code rain background:
+#### Alternative: Direct Web Launch
 
 ```bash
 python thalos_prime.py web
 ```
 
-Then open your browser to: **http://localhost:8000**
+Or with custom configuration:
+```bash
+python thalos_prime.py web --host 0.0.0.0 --port 8080
+```
 
-**What you'll see:**
-- Animated Matrix code rain background
-- Real-time system metrics (Neural Density, Accuracy, Spike Rate)
-- Interactive chatbot interface
-- Live neural activity visualization
+#### Docker Deployment
 
-**Try these commands in the chatbot:**
-- `/status` - View system status
-- `/metrics` - See detailed biological metrics
-- `/lobes` - Check organoid activity
-- `/help` - Show all commands
-
-#### Option 3: Command Line Interface
-
-For programmers and system administrators:
+For production environments:
 
 ```bash
-# Check system status
+# Quick start
+docker-compose up
+
+# Or manual Docker
+docker build -t thalos-prime:3.0 .
+docker run -p 8000:8000 thalos-prime:3.0
+```
+
+#### Check System Status
+
+```bash
 python thalos_prime.py status
-
-# Run CLI commands
-python thalos_prime.py cli status
-python thalos_prime.py cli memory create test_key test_value
-python thalos_prime.py cli --help
 ```
 
-#### Option 4: Test the System
-
-Verify all components are working:
-
-```bash
-python test_system.py
-```
-
-**Expected output:**
-```
-Core Systems           : ✓ PASS
-Wetware               : ✓ PASS
-AI Systems            : ✓ PASS
-Database              : ✓ PASS
-Interfaces            : ✓ PASS
-
-🎉 All systems operational!
-```
+**See [WEB_DEPLOYMENT_GUIDE.md](WEB_DEPLOYMENT_GUIDE.md) for complete deployment documentation.**
 
 ---
 
@@ -231,127 +203,57 @@ predictions = analytics.predict_next("temp", steps=5)
 
 ---
 
-## 📖 Usage Instructions
+## 📖 Using the Web Interface
 
-### Web Interface Guide
+### Accessing the System
 
-1. **Start the server:**
+1. **Start the system:**
    ```bash
-   python thalos_prime.py web
+   python boot_thalos.py
    ```
 
-2. **Access the interface:**
-   - Open browser to http://localhost:8000
-   - You'll see the Matrix code rain immediately
+2. **Browser opens automatically to:** http://localhost:8000
 
-3. **Interact with the system:**
-   - Type messages in the input field at the bottom
-   - Press ENTER or click "TRANSMIT"
-   - Watch the biological processing indicators
-   - Observe neural activity in the bottom-right visualizer
+3. **Experience the Matrix interface:**
+   - Animated code rain background
+   - Real-time neural activity visualization
+   - Interactive chatbot console
+   - System status monitoring
+   - Live metrics dashboard
 
-4. **Use commands:**
-   - `/status` - Full system report with wetware health
-   - `/metrics` - Neural density, spike rates, lobe activity
-   - `/lobes` - Detailed organoid lobe analysis
-   - `/train` - Start adaptive training protocol
+### Chatbot Commands
 
-### CLI Usage
+Type these commands in the chat interface:
 
-```bash
-# System operations
-python thalos_prime.py status              # View system status
-python thalos_prime.py cli --help          # Show help
+- `/status` - Full system report with wetware health
+- `/metrics` - Neural density, spike rates, lobe activity
+- `/lobes` - Detailed organoid lobe analysis
+- `/train` - Start adaptive training protocol
+- `/help` - Show all available commands
 
-# Memory operations
-python thalos_prime.py cli memory create key value
-python thalos_prime.py cli memory read key
-python thalos_prime.py cli memory update key newvalue
-python thalos_prime.py cli memory delete key
+### Natural Conversation
 
-# Code generation
-python thalos_prime.py cli codegen class MyClass
-python thalos_prime.py cli codegen function my_function
+Simply type any question or statement - no commands needed! The system uses:
+- Biological neural processing
+- Contextual understanding
+- Multi-lobe cognitive processing
+- Prime Directive ethical framework
 
-# Web server options
-python thalos_prime.py web --host 0.0.0.0 --port 8080
-```
+### API Access (Optional)
 
-### Python API Usage
-
-**CORRECT Pattern: CIS Ownership** (v1.0+)
-
-All subsystems are owned and initialized by CIS. No direct instantiation permitted.
-
-```python
-from src.core.cis import CIS
-
-# Initialize CIS - the system orchestrator
-cis = CIS()
-
-# Boot system - CIS initializes all subsystems including CLI, API, Memory, CodeGen
-if cis.boot():
-    print("System operational")
-    
-    # Access CIS-owned subsystems (DO NOT create new instances)
-    memory = cis.get_memory()
-    codegen = cis.get_codegen()
-    cli = cis.get_cli()
-    api = cis.get_api()
-    
-    # Use memory subsystem
-    memory.store("key", "value")
-    value = memory.retrieve("key")
-    
-    # Use codegen subsystem
-    code = codegen.generate_class("MyClass", methods=["process", "validate"])
-    
-    # Get system status
-    status = cis.status()
-    print(f"Status: {status['status']}")
-    print(f"Subsystems: {status['subsystems']}")
-    
-    # Lifecycle methods
-    checkpoint = cis.checkpoint()  # Save state
-    cis.reconcile()  # Fix inconsistencies
-    
-    # Cleanup
-    cis.shutdown()
-else:
-    print("Boot failed - system halted deterministically")
-```
-
-**DEPRECATED Pattern** (Pre-v1.0 - Do Not Use):
-```python
-# ❌ WRONG - Creates orphaned instances
-from interfaces.cli import CLI
-from interfaces.api import API
-
-cli = CLI(cis)  # Duplicates CIS-owned instance
-api = API(cis)  # Violates ownership principle
-```
-
-### Programmatic REST API Usage
+The web interface exposes REST endpoints:
 
 ```python
 import requests
 
-# System must be booted via CIS first
-# Access CIS-owned API endpoints
-
 # Get system status
-response = requests.get('http://localhost:5000/api/status')
-status = response.json()
+response = requests.get('http://localhost:8000/api/status')
+print(response.json())
 
-# Memory operations
-requests.post('http://localhost:5000/api/memory', 
-              json={'key': 'mykey', 'value': 'myvalue'})
-
-requests.get('http://localhost:5000/api/memory/mykey')
-
-# Code generation
-requests.post('http://localhost:5000/api/codegen/class',
-              json={'name': 'MyClass', 'methods': ['process']})
+# Chat with system
+response = requests.post('http://localhost:8000/api/chat',
+                        json={'message': 'Hello, Thalos'})
+print(response.json()['response'])
 ```
 
 ---
@@ -425,62 +327,118 @@ Thalos Prime v3.0
 
 ## 🔧 Configuration
 
-### Basic Configuration
+### Environment Setup
 
-Create a `.env` file (copy from `.env.example`):
+Create a `.env` file from the template:
 
 ```bash
-# System
-THALOS_ENV=development
-THALOS_DEBUG=true
+cp .env.example .env
+```
+
+**Key settings for web deployment:**
+
+```env
+# Production Mode
+THALOS_ENV=production
+THALOS_DEBUG=false
+FLASK_ENV=production
 
 # Web Server
 THALOS_API_HOST=0.0.0.0
 THALOS_API_PORT=8000
 
-# Database (choose one)
-THALOS_STORAGE_TYPE=memory     # Default: no setup needed
-# THALOS_STORAGE_TYPE=sqlite    # File-based
-# THALOS_STORAGE_TYPE=postgresql # Production-ready
-# THALOS_STORAGE_TYPE=redis     # High-performance
+# Storage (Choose one)
+THALOS_STORAGE_TYPE=file  # Recommended
+THALOS_STORAGE_PATH=/app/data/storage.json
+
+# Security (CHANGE THESE!)
+THALOS_SECRET_KEY=your-secure-random-key-here
+THALOS_API_KEY=your-api-key-here
 ```
 
-### Advanced Configuration
-
-**Disable components:**
+**Generate secure keys:**
 ```bash
-python thalos_prime.py web --no-wetware --no-ai
+python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-**Custom database:**
+### Storage Options
+
+| Type | Best For | Setup Required |
+|------|----------|----------------|
+| `memory` | Development, testing | None |
+| `file` | Small-medium deployments | None |
+| `redis` | High-performance, scaling | Redis server |
+| `postgresql` | Enterprise, large-scale | PostgreSQL |
+
+### Network Configuration
+
+**Local access only:**
 ```bash
-export THALOS_STORAGE_TYPE=postgresql
-export THALOS_DB_HOST=localhost
-export THALOS_DB_PORT=5432
-export THALOS_DB_NAME=thalos
-export THALOS_DB_USER=thalos_user
-export THALOS_DB_PASSWORD=secure_password
-python thalos_prime.py web
+python thalos_prime.py web --host 127.0.0.1 --port 8000
+```
+
+**Network-wide access:**
+```bash
+python thalos_prime.py web --host 0.0.0.0 --port 8000
+```
+
+**Custom port:**
+```bash
+python thalos_prime.py web --port 8080
 ```
 
 ---
 
 ## 🐳 Docker Deployment
 
+**Production-ready containerized deployment:**
+
+### Quick Start
+
 ```bash
-# Build and run
-docker build -t thalos-prime:2.0 .
-docker run -p 8000:8000 thalos-prime:2.0
-
-# Or use docker-compose
 docker-compose up
+```
 
-# With persistence
-docker run -v $(pwd)/data:/app/data \
+Access at: **http://localhost:8000**
+
+### Manual Docker
+
+```bash
+# Build image
+docker build -t thalos-prime:3.0 .
+
+# Run container
+docker run -d \
+  --name thalos-prime \
+  -p 8000:8000 \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/logs:/app/logs \
+  thalos-prime:3.0
+```
+
+### Docker with Custom Configuration
+
+```bash
+docker run -d \
+  --name thalos-prime \
+  -p 8000:8000 \
+  -e THALOS_ENV=production \
   -e THALOS_STORAGE_TYPE=file \
   -e THALOS_STORAGE_PATH=/app/data/storage.json \
-  -p 8000:8000 thalos-prime:2.0
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/logs:/app/logs \
+  thalos-prime:3.0
 ```
+
+### Cloud Deployment
+
+**AWS, Azure, GCP ready!** See [WEB_DEPLOYMENT_GUIDE.md](WEB_DEPLOYMENT_GUIDE.md) for:
+- AWS ECS/EC2 deployment
+- Azure Container Instances
+- Google Cloud Run
+- Kubernetes configurations
+- SSL/HTTPS setup
+- Production best practices
 
 ---
 
@@ -507,62 +465,64 @@ pytest --cov=src tests/
 
 ## 📚 Documentation
 
+- **[WEB_DEPLOYMENT_GUIDE.md](WEB_DEPLOYMENT_GUIDE.md)** - Complete web deployment documentation
 - **[SETUP.md](SETUP.md)** - Detailed installation and setup
-- **[README_V2.md](README_V2.md)** - Complete v3.0 documentation
-- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - System architecture details
-- **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Production deployment guide
-- **[docs/ROADMAP.md](docs/ROADMAP.md)** - Future development plans
+- **[AUTO_WEB_DEPLOY_IMPLEMENTATION.md](AUTO_WEB_DEPLOY_IMPLEMENTATION.md)** - Auto-deployment features
+- **[DEPLOYMENT_COMPLETE.md](DEPLOYMENT_COMPLETE.md)** - Deployment status and notes
+- **[docs/](docs/)** - Architecture and API documentation
 
 ---
 
 ## 🎯 Key Features
 
+✅ **Web-First Architecture** - Immersive browser-based interface  
+✅ **Matrix-Style UI** - Code rain with neural visualization  
+✅ **One-Command Deployment** - Launch in seconds  
 ✅ **Biological Computation** - Brain organoid simulation with STDP  
 ✅ **20,000 Channel MEA** - Multi-electrode array interface  
 ✅ **Life Support** - Temperature, pH, O₂, glucose regulation  
 ✅ **Spiking Neural Networks** - Leaky integrate-and-fire neurons  
 ✅ **Reinforcement Learning** - Q-learning with dopamine modulation  
-✅ **Matrix Interface** - Code rain chatbot with neural visualizer  
 ✅ **Auto-Reconnecting Database** - Resilient data persistence  
-✅ **Connection Pooling** - Optimized database performance  
-✅ **Circuit Breaker** - Prevents cascading failures  
-✅ **Multiple Backends** - SQLite, PostgreSQL, Redis support  
+✅ **Docker Support** - Production-ready containerization  
 ✅ **REST API** - Programmatic access  
-✅ **CLI Tools** - Command-line interface  
-✅ **Docker Support** - Containerized deployment  
+✅ **Cloud Ready** - AWS, Azure, GCP compatible  
+✅ **SSL/HTTPS Ready** - Production security  
 ✅ **Comprehensive Tests** - Unit and integration testing  
 
 ---
 
 ## 🔒 Security & Production
 
-**For production deployment:**
+**For production web deployment:**
 
 1. **Change default secrets:**
    ```bash
-   THALOS_SECRET_KEY=$(openssl rand -hex 32)
-   THALOS_API_KEY=$(openssl rand -hex 32)
+   THALOS_SECRET_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
+   THALOS_API_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
    ```
 
 2. **Use HTTPS:**
    - Set up nginx/traefik as reverse proxy
-   - Enable SSL/TLS certificates
+   - Enable SSL/TLS certificates (Let's Encrypt)
+   - Configure HTTPS redirects
 
-3. **Configure database:**
-   - Use PostgreSQL or Redis for production
-   - Enable connection pooling
-   - Set up automated backups
+3. **Configure storage:**
+   - Use file-based or database storage (not memory)
+   - Enable automated backups
+   - Set up connection pooling
 
-4. **Monitor resources:**
-   - CPU/Memory usage
-   - Database connections
-   - Network latency
+4. **Firewall & Network:**
+   - Configure firewall rules (allow port 8000 or 443)
+   - Use private networks for database connections
+   - Enable DDoS protection (Cloudflare)
 
-5. **Enable logging:**
-   ```bash
-   THALOS_LOG_LEVEL=INFO
-   THALOS_LOG_FILE=/var/log/thalos/system.log
-   ```
+5. **Monitoring:**
+   - Set up health check monitoring
+   - Enable logging to files
+   - Configure alerts for failures
+
+**See [WEB_DEPLOYMENT_GUIDE.md](WEB_DEPLOYMENT_GUIDE.md) for complete security checklist.**
 
 ---
 
@@ -586,36 +546,55 @@ See [THALOS-PRIME-LICENSE.txt](THALOS-PRIME-LICENSE.txt) for full license detail
 
 ### Common Issues
 
+**Web server won't start:**
+```bash
+# Check if port is in use
+lsof -i :8000
+
+# Try different port
+python thalos_prime.py web --port 8080
+
+# Reinstall dependencies
+pip install -r requirements.txt
+```
+
+**Browser doesn't open automatically:**
+- Manually navigate to: http://localhost:8000
+- Check firewall settings
+- Try different browser
+
 **"Module not found" errors:**
 ```bash
 pip install -r requirements.txt
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
 ```
 
-**Web server won't start:**
+**Docker issues:**
 ```bash
-pip install flask flask-cors
-python thalos_prime.py web --port 8080  # Try different port
+# Rebuild without cache
+docker build --no-cache -t thalos-prime:3.0 .
+
+# Check logs
+docker logs thalos-prime
+
+# Check health
+docker ps
 ```
 
 **Database connection fails:**
 ```bash
-# Use memory storage (no setup)
-export THALOS_STORAGE_TYPE=memory
-python thalos_prime.py web
+# Use file-based storage
+export THALOS_STORAGE_TYPE=file
+python boot_thalos.py
 ```
-
-**System test failures:**
-- Check Python version (3.12+ required)
-- Verify all dependencies installed
-- Review error messages in test output
 
 ### Getting Help
 
-- Run system diagnostics: `python test_system.py`
-- Check logs in console output
-- Review documentation in `docs/` folder
-- Open an issue on GitHub with system status output
+1. Check health status: http://localhost:8000/api/status
+2. Review logs in `logs/` directory
+3. Run diagnostics: `python test_system.py`
+4. See [WEB_DEPLOYMENT_GUIDE.md](WEB_DEPLOYMENT_GUIDE.md)
+5. Open GitHub issue with logs and error details
 
 ---
 
@@ -623,12 +602,12 @@ python thalos_prime.py web
 
 You know Thalos Prime is working when you see:
 
-✓ Matrix code rain animation  
+✓ Browser auto-opens to http://localhost:8000  
+✓ Matrix code rain animation playing  
 ✓ System status: "OPERATIONAL"  
-✓ Neural density increasing over time  
-✓ Spike rate showing activity (30-50 Hz)  
-✓ Organoid lobes responding to queries  
-✓ Life support maintaining homeostasis  
+✓ Neural visualization active  
+✓ Chat interface responsive  
+✓ Organoid lobes showing activity  
 ✓ Database connections healthy  
 
 ---
@@ -636,6 +615,7 @@ You know Thalos Prime is working when you see:
 **THALOS PRIME v3.0**  
 *The future of intelligence is biological.*
 
-**Status:** OPERATIONAL  
-**Neural Density:** EXPANDING  
+**Status:** WEB DEPLOYMENT READY  
+**Interface:** MATRIX IMMERSIVE  
+**Mode:** PRODUCTION OPTIMIZED  
 **Prime Directive:** ACTIVE
