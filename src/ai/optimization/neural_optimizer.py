@@ -300,6 +300,8 @@ class AdaptiveLearningOptimizer:
         self.performance_history.append(performance)
         
         if len(self.performance_history) < 2:
+            # Record initial learning rate even on first call
+            self.lr_history.append(self.learning_rate)
             return self.learning_rate
         
         # Check if improving

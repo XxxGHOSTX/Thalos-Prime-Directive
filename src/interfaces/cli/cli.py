@@ -124,8 +124,17 @@ class CLI:
             
         if not args:
             return self.parser.format_help()
-            
-        parsed = self.parser.parse_args(args)
+        
+        try:
+            parsed = self.parser.parse_args(args)
+        except SystemExit as e:
+            # Handle --help and other argparse exits
+            if e.code == 0:
+                # Success exit (like --help)
+                return self.parser.format_help()
+            else:
+                # Error exit
+                return f"Error: Invalid arguments (exit code {e.code})"
         
         if not self.cis:
             return "Error: CIS not initialized"

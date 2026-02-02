@@ -19,6 +19,17 @@ class ThalosError(Exception):
         super().__init__(message)
         self.message = message
         self.details = details or {}
+    
+    def __str__(self) -> str:
+        """String representation - returns plain message"""
+        return self.message
+    
+    def formatted_message(self) -> str:
+        """Get formatted message with error code"""
+        error_code = self.__class__.__name__.replace('Error', '').upper()
+        if error_code == 'THALOS':
+            return f"[THALOS_ERROR] {self.message}"
+        return f"[{error_code}_ERROR] {self.message}"
         
     def to_dict(self):
         """Convert exception to dictionary for serialization"""
@@ -49,22 +60,56 @@ class SubsystemError(CISError):
     pass
 
 
+class CISNotBootedError(CISError):
+    """CIS has not been booted yet - operation requires booted CIS"""
+    
+    def __init__(self, operation: str = None):
+        self.operation = operation
+        message = f"CIS not booted - cannot perform operation: {operation}" if operation else "CIS not booted"
+        super().__init__(message)
+
+
 class KeyNotFoundError(ThalosError):
     """Key does not exist in storage"""
-    pass
+    
+    def __init__(self, key: str):
+        self.key = key
+        super().__init__(f"Key not found: {key}")
 
 
 class KeyExistsError(ThalosError):
     """Key already exists in storage"""
-    pass
+    
+    def __init__(self, key: str):
+        self.key = key
+        super().__init__(f"Key already exists: {key}")
 
 
 class ValidationError(ThalosError):
     """Data validation failure"""
     
-    def __init__(self, message: str, field: str = None, value=None, details: dict = None):
+    def __init__(self, *args, **kwargs):
+        # Support multiple signatures:
+        # ValidationError(field, reason)  - for test compatibility
+        # ValidationError(message, field=..., value=..., details=...)  - for Validator use
+        
+        if len(args) == 2 and not kwargs:
+            # ValidationError(field, reason)
+            self.field = args[0]
+            self.reason = args[1]
+            message = f"{args[0]}: {args[1]}"
+            value = None
+            details = None
+        elif len(args) == 1:
+            message = args[0]
+            self.field = kwargs.get('field')
+            self.reason = kwargs.get('reason', message)
+            value = kwargs.get('value')
+            details = kwargs.get('details')
+        else:
+            raise TypeError("ValidationError() takes 1 or 2 positional arguments")
+        
         super().__init__(message, details)
-        self.field = field
         self.value = value
         
     def to_dict(self):

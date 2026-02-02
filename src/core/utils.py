@@ -43,6 +43,21 @@ class Result(Generic[T]):
         self._success = success
         self._details = details or {}
     
+    @property
+    def value(self) -> Optional[T]:
+        """Get the value"""
+        return self._value
+    
+    @property
+    def error(self) -> Optional[str]:
+        """Get error message"""
+        return self._error
+    
+    @property
+    def success(self) -> bool:
+        """Get success status"""
+        return self._success
+    
     @classmethod
     def ok(cls, value: T) -> 'Result[T]':
         """Create a successful Result"""
@@ -90,10 +105,6 @@ class Result(Generic[T]):
             raise ValueError(f"{message}: {self._error}")
         return self._value
     
-    def error(self) -> Optional[str]:
-        """Get error message"""
-        return self._error
-    
     def details(self) -> Dict:
         """Get additional details"""
         return self._details
@@ -102,6 +113,10 @@ class Result(Generic[T]):
         if self._success:
             return f"Result.ok({self._value})"
         return f"Result.fail({self._error})"
+    
+    def __bool__(self) -> bool:
+        """Boolean conversion returns success status"""
+        return self._success
 
 
 class Validator:
@@ -363,3 +378,223 @@ def clamp(value: Union[int, float], min_val: Union[int, float],
         Clamped value
     """
     return max(min_val, min(value, max_val))
+
+
+def validate_key(key: Any) -> bool:
+    """
+    Validate a storage key
+    
+    Valid keys must:
+    - Be non-empty strings
+    - Start with letter or underscore
+    - Contain only letters, numbers, underscores, and hyphens
+    
+    Args:
+        key: Key to validate
+        
+    Returns:
+        True if valid, False otherwise
+    """
+    if not isinstance(key, str) or not key:
+        return False
+    
+    # Must start with letter or underscore
+    if not (key[0].isalpha() or key[0] == '_'):
+        return False
+    
+    # Must contain only alphanumeric, underscore, or hyphen
+    pattern = r'^[a-zA-Z_][a-zA-Z0-9_-]*$'
+    return bool(re.match(pattern, key))
+
+
+def validate_class_name(name: Any) -> bool:
+    """
+    Validate a Python class name
+    
+    Valid class names must:
+    - Be non-empty strings
+    - Start with uppercase letter
+    - Contain only letters and numbers
+    
+    Args:
+        name: Class name to validate
+        
+    Returns:
+        True if valid, False otherwise
+    """
+    if not isinstance(name, str) or not name:
+        return False
+    
+    # Must start with uppercase letter
+    if not name[0].isupper():
+        return False
+    
+    # Must contain only alphanumeric characters
+    pattern = r'^[A-Z][a-zA-Z0-9]*$'
+    return bool(re.match(pattern, name))
+
+
+def validate_function_name(name: Any) -> bool:
+    """
+    Validate a Python function name
+    
+    Valid function names must:
+    - Be non-empty strings
+    - Start with lowercase letter or underscore
+    - Contain only lowercase letters, numbers, and underscores
+    
+    Args:
+        name: Function name to validate
+        
+    Returns:
+        True if valid, False otherwise
+    """
+    if not isinstance(name, str) or not name:
+        return False
+    
+    # Must start with lowercase letter or underscore
+    if not (name[0].islower() or name[0] == '_'):
+        return False
+    
+    # Must contain only lowercase letters, numbers, and underscores
+    pattern = r'^[a-z_][a-z0-9_]*$'
+    return bool(re.match(pattern, name))
+
+
+def validate_identifier(identifier: Any) -> bool:
+    """
+    Validate a Python identifier
+    
+    Valid identifiers must:
+    - Be non-empty strings
+    - Start with letter or underscore
+    - Contain only letters, numbers, and underscores
+    
+    Args:
+        identifier: Identifier to validate
+        
+    Returns:
+        True if valid, False otherwise
+    """
+    if not isinstance(identifier, str) or not identifier:
+        return False
+    
+    # Use Python's built-in identifier validation
+    return identifier.isidentifier()
+
+
+def safe_get(data: Dict, *keys, default: Any = None) -> Any:
+    """
+    Safely access nested dictionary values
+    
+    Args:
+        data: Dictionary to access
+        *keys: Keys to traverse
+        default: Default value if key not found
+        
+    Returns:
+        Value at nested key or default
+    """
+    result = data
+    for key in keys:
+        if not isinstance(result, dict):
+            return default
+        result = result.get(key)
+        if result is None:
+            return default
+    return result
+
+
+def flatten_dict(nested: Dict, parent_key: str = '', sep: str = '.') -> Dict:
+    """
+    Flatten a nested dictionary
+    
+    Args:
+        nested: Nested dictionary to flatten
+        parent_key: Parent key for recursion
+        sep: Separator for keys
+        
+    Returns:
+        Flattened dictionary
+    """
+    items = []
+    for k, v in nested.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
+def format_dict_for_display(data: Dict, indent: int = 2) -> str:
+    """
+    Format dictionary for display
+    
+    Args:
+        data: Dictionary to format
+        indent: Indentation level
+        
+    Returns:
+        Formatted string
+    """
+    import json
+    return json.dumps(data, indent=indent, default=str)
+
+
+def first_or_default(items: List[T], predicate=None, default: Optional[T] = None) -> Optional[T]:
+    """
+    Get first item matching predicate or default
+    
+    Args:
+        items: List of items
+        predicate: Optional predicate function
+        default: Default value if no match
+        
+    Returns:
+        First matching item or default
+    """
+    if not items:
+        return default
+    
+    if predicate is None:
+        return items[0] if items else default
+    
+    for item in items:
+        if predicate(item):
+            return item
+    
+    return default
+
+
+def deduplicate(items: List[T]) -> List[T]:
+    """
+    Remove duplicates from list while preserving order
+    
+    Args:
+        items: List with possible duplicates
+        
+    Returns:
+        List without duplicates
+    """
+    seen = set()
+    result = []
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
+    return result
+
+
+def chunk_list(items: List[T], chunk_size: int) -> List[List[T]]:
+    """
+    Split list into chunks
+    
+    Args:
+        items: List to chunk
+        chunk_size: Size of each chunk
+        
+    Returns:
+        List of chunks
+    """
+    return [items[i:i + chunk_size] for i in range(0, len(items), chunk_size)]
