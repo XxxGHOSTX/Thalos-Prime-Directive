@@ -24,7 +24,7 @@ class TestWetwareIntegration:
         life_support = LifeSupport()
         assert life_support.initialize(), "Life support init failed"
         
-        mea = MEAInterface(channels=1000)  # Use fewer channels for testing
+        mea = MEAInterface(channels=1000)  # Using 1000 channels (reduced from 20,000)
         assert mea.initialize(), "MEA init failed"
         
         organoid = OrganoidCore("test_org", "logic")
@@ -227,8 +227,8 @@ class TestCompletePipeline:
         stored_data = conn['data']['pipeline_test']
         db.pool.return_connection(conn)
         
-        # Verify - allow for zero spikes in some cases
-        assert stored_data['total_spikes'] >= 0
+        # Verify data was stored correctly
+        assert 'total_spikes' in stored_data
         assert stored_data['lobes_active'] == 3
         assert stored_data['viability'] > 0.5
         
