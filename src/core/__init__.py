@@ -25,26 +25,24 @@ Core components:
 
 from .cis import CIS
 from .memory import MemoryModule
-from .config import ThalosConfig, load_config
+from .config import Config as ThalosConfig, load_config
 from .logging import ThalosLogger, get_logger
 from .exceptions import (
     ThalosError,
     CISError,
-    CISNotBootedError,
-    CISAlreadyBootedError,
+    BootError,
+    ShutdownError,
     SubsystemError,
     MemoryError,
     KeyExistsError,
     KeyNotFoundError,
     CodeGenError,
-    TemplateNotFoundError,
-    TemplateExistsError,
-    GenerationError,
+    TemplateError,
     InterfaceError,
-    CLIError,
-    APIError,
     ValidationError,
-    ConfigurationError
+    ConfigurationError,
+    LifecycleError,
+    StateError
 )
 
 __all__ = [
@@ -56,19 +54,17 @@ __all__ = [
     'get_logger',
     'ThalosError',
     'CISError',
-    'CISNotBootedError',
-    'CISAlreadyBootedError',
+    'BootError',
+    'ShutdownError',
     'SubsystemError',
     'MemoryError',
     'KeyExistsError',
     'KeyNotFoundError',
     'CodeGenError',
-    'TemplateNotFoundError',
-    'TemplateExistsError',
-    'GenerationError',
+    'TemplateError',
     'InterfaceError',
-    'CLIError',
-    'APIError',
     'ValidationError',
-    'ConfigurationError'
+    'ConfigurationError',
+    'LifecycleError',
+    'StateError'
 ]
