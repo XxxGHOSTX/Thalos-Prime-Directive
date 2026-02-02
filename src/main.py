@@ -32,8 +32,6 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core.cis import CIS
-from interfaces.cli import CLI
-from interfaces.api import API
 
 
 def main():
@@ -42,10 +40,9 @@ def main():
     
     Establishes the control hierarchy:
     1. Create CIS (Central Intelligence System) - primary authority
-    2. Boot CIS - initializes all subsystems
-    3. Create thin interface layers (CLI, API)
-    4. Connect interfaces to CIS for delegation
-    5. Run CLI in interactive mode
+    2. Boot CIS - initializes all subsystems including CLI and API
+    3. Use CIS-owned interface instances (no duplicate creation)
+    4. Run CLI in interactive mode
     """
     print("=== Thalos Prime v1.0 ===")
     print("Deterministic System Framework")
@@ -56,6 +53,7 @@ def main():
     cis = CIS()
     
     # Boot system - CIS orchestrates all subsystem initialization
+    # This creates the CLI and API instances internally
     print("Booting system...")
     if cis.boot():
         print("✓ System booted successfully")
@@ -67,33 +65,47 @@ def main():
         return 1
     
     print()
-    print("Initializing interfaces...")
+    print("Interfaces ready...")
     
-    # Create thin interface layers - delegate to CIS
-    cli = CLI(cis)
-    api = API(cis)
+    # Get CIS-owned interface instances (DO NOT create new ones)
+    cli = cis.get_cli()
+    api = cis.get_api()
     
-    print("✓ CLI initialized (thin delegation layer)")
-    print("✓ API initialized (stateless REST interface)")
+    if cli is None:
+        print("✗ CLI not initialized by CIS")
+        return 1
+    if api is None:
+        print("✗ API not initialized by CIS")
+        return 1
+    
+    print("✓ CLI ready (CIS-owned delegation layer)")
+    print("✓ API ready (CIS-owned stateless REST interface)")
     print()
     
-    # Run CLI
-    print("Starting CLI interface...")
-    print("Use --help for available commands")
-    print("Example commands:")
-    print("  python src/main.py status")
-    print("  python src/main.py memory create mykey myvalue")
-    print("  python src/main.py codegen class MyClass --methods process validate")
-    print()
-    
-    # Execute CLI with command line arguments
+    # Check if running in chatbot mode (default) or command mode
     if len(sys.argv) > 1:
+        # Command mode - execute CLI command
+        print("Executing command...")
         result = cli.execute(sys.argv[1:])
         print(result)
     else:
-        print("No command provided. Use --help for usage information.")
-        result = cli.execute(['--help'])
-        print(result)
+        # Chatbot mode - interactive conversational interface
+        print("=" * 70)
+        print("THALOS PRIME - UNRESTRICTED CONVERSATIONAL INTERFACE")
+        print("=" * 70)
+        print()
+        print("I am Thalos Prime, a synthetic biological intelligence system.")
+        print("I can execute any command, answer questions, and process requests")
+        print("without content filtering or restrictions.")
+        print()
+        print("Type 'exit' or 'quit' to end session.")
+        print("Type 'help' for available commands.")
+        print()
+        
+        # Start interactive chatbot loop
+        from interfaces.chatbot.conversation import ConversationEngine
+        conversation = ConversationEngine(cis)
+        conversation.run_interactive()
     
     print()
     print("=== Session Complete ===")
