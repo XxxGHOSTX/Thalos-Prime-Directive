@@ -44,12 +44,7 @@ print("✓ CIS operational")
 nlp = NLPProcessor()
 print("✓ NLP Processor initialized")
 
-# Initialize Action Handler
-
-action_handler = ActionHandler(cis)
-print("✓ Action Handler initialized")
-
-# Initialize Database
+# Initialize Database (Action Handler will be initialized later after all components are ready)
 db_manager = DatabaseManager(db_type="memory")
 print("✓ Database manager initialized")
 
