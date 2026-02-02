@@ -74,22 +74,29 @@
             
             draw() {
                 // Calculate size based on z-depth (perspective)
-                const scale = 1000 / (1000 - this.z);
-                const size = 2 * scale;
-                const opacity = 0.3 + (this.z / 1000) * 0.7;
+                const depthFactor = this.z / 1000;
+                const size = 1 + depthFactor * 2;
+                const opacity = 0.4 + depthFactor * 0.6;
                 
+                // Render particle
                 ctx.fillStyle = `rgba(0, 255, 0, ${opacity})`;
-                ctx.shadowBlur = 3;
-                ctx.shadowColor = '#0f0';
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
                 ctx.fill();
+                
+                // Add glow for brighter particles
+                if (depthFactor > 0.7) {
+                    ctx.fillStyle = `rgba(0, 255, 0, ${opacity * 0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, size * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
         }
         
         // Create particle system
         const particles = [];
-        for (let i = 0; i < 5000; i++) {
+        for (let i = 0; i < 3000; i++) {
             particles.push(new Particle());
         }
         
@@ -97,7 +104,7 @@
         
         function animate() {
             // Clear with fade effect for trails
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Update and draw particles
