@@ -267,11 +267,12 @@ def test_exception_hierarchy():
     """Test exception class hierarchy"""
     # Base exception
     base_error = ThalosError("base message")
-    assert str(base_error) == "[THALOS_ERROR] base message"
+    assert str(base_error) == "base message"
+    assert base_error.formatted_message() == "[THALOS_ERROR] base message"
     
     # CIS exceptions
     cis_error = CISError("CIS issue")
-    assert "CIS_ERROR" in str(cis_error)
+    assert "CIS_ERROR" in cis_error.formatted_message()
     
     not_booted = CISNotBootedError("test_operation")
     assert "not booted" in str(not_booted).lower()
