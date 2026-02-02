@@ -1,182 +1,180 @@
 """
 © 2026 Tony Ray Macier III. All rights reserved.
 
-Thalos Prime is an original proprietary software system, including but not limited to
-its source code, system architecture, internal logic descriptions, documentation,
-interfaces, diagrams, and design materials.
-
-Unauthorized reproduction, modification, distribution, public display, or use of
-this software or its associated materials is strictly prohibited without the
-express written permission of the copyright holder.
-
 Thalos Prime™ is a proprietary system.
 """
 
 """
-Thalos Prime - Exception Hierarchy
+Thalos Prime Exception Hierarchy
 
 Complete exception hierarchy for deterministic error handling.
-No catch-all exceptions permitted - all errors must be explicit and recoverable.
+No catch-all exceptions allowed - all errors must be explicit and recoverable.
 """
 
 
 class ThalosError(Exception):
-    """
-    Base exception for all Thalos Prime errors.
+    """Base exception for all Thalos Prime errors"""
     
-    All exceptions in Thalos Prime inherit from this base class,
-    enabling consistent error handling and state capture.
-    """
-    
-    def __init__(self, message: str, state: dict = None):
-        """
-        Initialize exception with message and optional state.
-        
-        Args:
-            message: Human-readable error description
-            state: Optional system state at time of error for debugging
-        """
+    def __init__(self, message: str, details: dict = None):
         super().__init__(message)
         self.message = message
-        self.state = state or {}
+        self.details = details or {}
         
-    def __str__(self) -> str:
-        """String representation of the exception"""
-        if self.state:
-            return f"{self.message} | State: {self.state}"
-        return self.message
+    def to_dict(self):
+        """Convert exception to dictionary for serialization"""
+        return {
+            'type': self.__class__.__name__,
+            'message': self.message,
+            'details': self.details
+        }
 
 
 class CISError(ThalosError):
-    """
-    Central Intelligence System errors.
-    
-    Raised when CIS operations fail - boot, shutdown, or orchestration issues.
-    """
+    """Errors related to CIS (Central Intelligence System)"""
     pass
 
 
-class SubsystemError(ThalosError):
-    """
-    General subsystem errors.
-    
-    Base class for errors in specific subsystems (memory, codegen, etc.)
-    """
+class BootError(CISError):
+    """System boot failure - cannot proceed"""
     pass
 
 
-class MemoryError(SubsystemError):
-    """
-    Memory subsystem errors.
-    
-    Raised when memory operations fail - storage, retrieval, or persistence issues.
-    """
+class ShutdownError(CISError):
+    """System shutdown failure - state may be inconsistent"""
     pass
 
 
-class KeyNotFoundError(MemoryError):
-    """
-    Key not found in memory storage.
-    
-    Raised when attempting to retrieve or delete a non-existent key.
-    """
+class SubsystemError(CISError):
+    """Subsystem initialization or operation failure"""
     pass
 
 
-class KeyExistsError(MemoryError):
-    """
-    Key already exists in memory storage.
-    
-    Raised when attempting to create a key that already exists.
-    """
+class KeyNotFoundError(ThalosError):
+    """Key does not exist in storage"""
+    pass
+
+
+class KeyExistsError(ThalosError):
+    """Key already exists in storage"""
     pass
 
 
 class ValidationError(ThalosError):
-    """
-    Validation errors.
+    """Data validation failure"""
     
-    Raised when input validation fails or system state is invalid.
-    """
-    pass
+    def __init__(self, message: str, field: str = None, value=None, details: dict = None):
+        super().__init__(message, details)
+        self.field = field
+        self.value = value
+        
+    def to_dict(self):
+        result = super().to_dict()
+        result['field'] = self.field
+        result['value'] = str(self.value) if self.value is not None else None
+        return result
 
 
 class StateError(ThalosError):
-    """
-    System state errors.
+    """Invalid state transition or operation in current state"""
     
-    Raised when system is in an invalid state for requested operation.
-    """
-    pass
+    def __init__(self, message: str, current_state: str = None, expected_state: str = None, details: dict = None):
+        super().__init__(message, details)
+        self.current_state = current_state
+        self.expected_state = expected_state
+        
+    def to_dict(self):
+        result = super().to_dict()
+        result['current_state'] = self.current_state
+        result['expected_state'] = self.expected_state
+        return result
 
 
 class ConfigurationError(ThalosError):
-    """
-    Configuration errors.
-    
-    Raised when configuration is invalid or missing required values.
-    """
+    """Configuration file or setting error"""
     pass
 
 
-class InitializationError(ThalosError):
-    """
-    Initialization errors.
-    
-    Raised when subsystem initialization fails.
-    """
+class MemoryError(ThalosError):
+    """Memory subsystem errors"""
     pass
 
 
-class OperationError(ThalosError):
-    """
-    Operation errors.
-    
-    Raised when a subsystem operation fails during execution.
-    """
+class CodeGenError(ThalosError):
+    """Code generation errors"""
     pass
 
 
-class CodeGenError(SubsystemError):
-    """
-    Code generation errors.
-    
-    Raised when code generation fails or produces invalid output.
-    """
+class TemplateError(CodeGenError):
+    """Template not found or invalid"""
     pass
 
 
 class InterfaceError(ThalosError):
-    """
-    Interface layer errors.
-    
-    Raised when CLI, API, or web interface operations fail.
-    """
+    """CLI or API interface errors"""
     pass
 
 
 class LifecycleError(ThalosError):
-    """
-    Lifecycle errors.
+    """Lifecycle method execution error"""
     
-    Raised when lifecycle transitions fail (initialize, validate, operate, etc.)
-    """
-    pass
+    def __init__(self, message: str, phase: str = None, subsystem: str = None, details: dict = None):
+        super().__init__(message, details)
+        self.phase = phase
+        self.subsystem = subsystem
+        
+    def to_dict(self):
+        result = super().to_dict()
+        result['phase'] = self.phase
+        result['subsystem'] = self.subsystem
+        return result
 
 
 class ReconciliationError(ThalosError):
-    """
-    State reconciliation errors.
-    
-    Raised when system cannot reconcile internal inconsistencies.
-    """
+    """State reconciliation failure - system cannot restore consistency"""
     pass
 
 
 class CheckpointError(ThalosError):
-    """
-    Checkpoint errors.
-    
-    Raised when state persistence (checkpoint) operations fail.
-    """
+    """Checkpoint save/restore failure"""
+    pass
+
+
+class DeterminismError(ThalosError):
+    """Non-deterministic behavior detected"""
+    pass
+
+
+class ResourceError(ThalosError):
+    """Resource allocation or access error"""
+    pass
+
+
+class TimeoutError(ThalosError):
+    """Operation timeout"""
+    pass
+
+
+class DependencyError(ThalosError):
+    """Missing or incompatible dependency"""
+    pass
+
+
+# Security exceptions
+class SecurityError(ThalosError):
+    """Security-related errors"""
+    pass
+
+
+class AuthenticationError(SecurityError):
+    """Authentication failure"""
+    pass
+
+
+class AuthorizationError(SecurityError):
+    """Authorization failure"""
+    pass
+
+
+class InputValidationError(SecurityError):
+    """Input validation failure for security"""
     pass

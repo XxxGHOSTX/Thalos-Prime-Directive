@@ -5,30 +5,22 @@ Thalos Prime™ is a proprietary system.
 """
 
 """
-Pytest configuration and fixtures for Thalos Prime tests.
-
-Provides common fixtures for deterministic testing.
+Pytest Configuration and Fixtures for Thalos Prime
 """
 
 import pytest
 import sys
-import os
 from pathlib import Path
 
-# Add src directory to path
-src_path = Path(__file__).parent / 'src'
+# Add src to path
+src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
 
 @pytest.fixture
 def cis_instance():
-    """
-    Provide a fresh CIS instance for testing.
-    
-    Returns:
-        CIS: Fresh CIS instance
-    """
-    from core.cis import CIS
+    """Fixture providing a fresh CIS instance"""
+    from core.cis.controller import CIS
     cis = CIS()
     yield cis
     # Cleanup
@@ -38,129 +30,77 @@ def cis_instance():
 
 @pytest.fixture
 def booted_cis():
-    """
-    Provide a booted CIS instance for testing.
-    
-    Returns:
-        CIS: Booted CIS instance
-    """
-    from core.cis import CIS
+    """Fixture providing a booted CIS instance"""
+    from core.cis.controller import CIS
     cis = CIS()
     cis.boot()
     yield cis
-    # Cleanup
     cis.shutdown()
 
 
 @pytest.fixture
 def memory_module():
-    """
-    Provide a fresh Memory module for testing.
-    
-    Returns:
-        MemoryModule: Fresh memory instance
-    """
+    """Fixture providing a fresh memory module"""
     from core.memory.storage import MemoryModule
-    memory = MemoryModule()
-    yield memory
-    # Cleanup
-    memory.clear()
+    mem = MemoryModule()
+    yield mem
+    mem.clear()
 
 
 @pytest.fixture
-def config_manager():
-    """
-    Provide a ConfigManager instance for testing.
-    
-    Returns:
-        ConfigManager: Fresh config manager
-    """
-    from core.config import ConfigManager
-    config = ConfigManager()
-    yield config
+def codegen_module():
+    """Fixture providing a code generator"""
+    from codegen.generator import CodeGenerator
+    gen = CodeGenerator()
+    yield gen
+    gen.clear_history()
 
 
 @pytest.fixture
-def logger():
-    """
-    Provide a ThalosLogger instance for testing.
-    
-    Returns:
-        ThalosLogger: Fresh logger instance
-    """
-    from core.logging import ThalosLogger
-    logger = ThalosLogger()
-    yield logger
-    # Cleanup
-    logger.shutdown()
+def cli_instance():
+    """Fixture providing a CLI instance"""
+    from interfaces.cli.cli import CLI
+    cli = CLI()
+    return cli
 
 
 @pytest.fixture
-def temp_config_file(tmp_path):
-    """
-    Provide a temporary config file for testing.
-    
-    Args:
-        tmp_path: Pytest temporary directory fixture
-        
-    Returns:
-        Path: Path to temporary config file
-    """
+def api_instance():
+    """Fixture providing an API instance"""
+    from interfaces.api.server import API
+    api = API()
+    return api
+
+
+@pytest.fixture(autouse=True)
+def reset_singletons():
+    """Reset singleton instances between tests"""
+    yield
+    # Reset logging singleton
+    try:
+        from core.logging import ThalosLogger
+        ThalosLogger._instance = None
+        ThalosLogger._initialized = False
+    except ImportError:
+        pass
+
+
+@pytest.fixture
+def sample_config_file(tmp_path):
+    """Create a sample config file for testing"""
     config_file = tmp_path / "test_config.ini"
-    config_content = """
+    config_file.write_text("""
 [system]
-version = 1.0
+name = Thalos Prime Test
+version = 3.0.0
 debug = true
-log_level = DEBUG
 
 [memory]
-type = dict
 max_size = 1000
 persistence = false
 
-[codegen]
-templates_dir = ./templates
-output_dir = ./output
-validate_syntax = true
-"""
-    config_file.write_text(config_content)
-    yield config_file
-
-
-@pytest.fixture
-def sample_state():
-    """
-    Provide sample system state for testing.
-    
-    Returns:
-        dict: Sample state dictionary
-    """
-    return {
-        'version': '1.0',
-        'status': 'operational',
-        'booted': True,
-        'subsystems': {
-            'memory': True,
-            'codegen': True,
-            'cli': True,
-            'api': True
-        }
-    }
-
-
-# Configure pytest
-def pytest_configure(config):
-    """Configure pytest with custom markers"""
-    config.addinivalue_line("markers", "unit: mark test as a unit test")
-    config.addinivalue_line("markers", "integration: mark test as an integration test")
-    config.addinivalue_line("markers", "slow: mark test as slow running")
-
-
-def pytest_collection_modifyitems(config, items):
-    """Modify test collection - add markers automatically"""
-    for item in items:
-        # Auto-mark tests based on path
-        if "unit" in str(item.fspath):
-            item.add_marker(pytest.mark.unit)
-        elif "integration" in str(item.fspath):
-            item.add_marker(pytest.mark.integration)
+[logging]
+level = DEBUG
+file = logs/test.log
+""")
+    return config_file

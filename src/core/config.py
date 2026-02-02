@@ -1,347 +1,247 @@
 """
 © 2026 Tony Ray Macier III. All rights reserved.
 
-Thalos Prime is an original proprietary software system, including but not limited to
-its source code, system architecture, internal logic descriptions, documentation,
-interfaces, diagrams, and design materials.
-
-Unauthorized reproduction, modification, distribution, public display, or use of
-this software or its associated materials is strictly prohibited without the
-express written permission of the copyright holder.
-
 Thalos Prime™ is a proprietary system.
 """
 
 """
-Thalos Prime - Configuration Management
+Thalos Prime Configuration Management
 
-INI-based configuration with validation and type coercion.
-Supports environment variable overrides and defaults.
+INI-based configuration with validation and type safety.
+All configuration must be deterministic and validated.
 """
 
-import os
 import configparser
-from typing import Any, Dict, Optional, Union
 from pathlib import Path
-
+from typing import Any, Dict, Optional, Union, List
 from .exceptions import ConfigurationError, ValidationError
 
 
-class ConfigManager:
+class Config:
     """
-    Configuration manager for Thalos Prime.
+    Configuration manager for Thalos Prime
     
-    Loads configuration from INI files with support for:
-    - Environment variable overrides (THALOS_SECTION_KEY)
-    - Type coercion (str, int, float, bool)
-    - Default values
+    Provides:
+    - INI file parsing
+    - Type-safe value access
     - Validation
+    - Default values
+    - Environment overrides
     """
     
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_file: Optional[Union[str, Path]] = None):
         """
-        Initialize configuration manager.
+        Initialize configuration
         
         Args:
-            config_path: Path to config file. If None, uses default locations:
-                         1. ./config/thalos.ini
-                         2. ./thalos.ini
-                         3. Built-in defaults only
+            config_file: Path to INI config file (default: config/thalos.ini)
         """
         self.config = configparser.ConfigParser()
-        self.config_path: Optional[Path] = None
-        self._defaults = self._get_builtin_defaults()
+        self._loaded = False
+        self._config_file = None
         
-        # Try to load from file
-        if config_path:
-            self._load_from_file(config_path)
+        if config_file:
+            self.load(config_file)
         else:
-            self._load_default_locations()
-            
-    def _get_builtin_defaults(self) -> Dict[str, Dict[str, Any]]:
+            # Try default locations
+            default_paths = [
+                Path('config/thalos.ini'),
+                Path('thalos.ini'),
+                Path('/etc/thalos/thalos.ini')
+            ]
+            for path in default_paths:
+                if path.exists():
+                    self.load(path)
+                    break
+    
+    def load(self, config_file: Union[str, Path]) -> None:
         """
-        Get built-in default configuration.
-        
-        Returns:
-            Dictionary of default values
-        """
-        return {
-            'system': {
-                'version': '1.0',
-                'debug': False,
-                'log_level': 'INFO',
-            },
-            'memory': {
-                'type': 'dict',
-                'max_size': 10000,
-                'persistence': False,
-                'persistence_path': './data/memory.json',
-            },
-            'codegen': {
-                'templates_dir': './templates',
-                'output_dir': './output',
-                'validate_syntax': True,
-            },
-            'cli': {
-                'prompt': 'thalos> ',
-                'history_size': 1000,
-            },
-            'api': {
-                'host': '0.0.0.0',
-                'port': 5000,
-                'debug': False,
-            },
-            'logging': {
-                'level': 'INFO',
-                'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                'file': './logs/thalos.log',
-                'console': True,
-            }
-        }
-        
-    def _load_from_file(self, config_path: str) -> None:
-        """
-        Load configuration from file.
+        Load configuration from INI file
         
         Args:
-            config_path: Path to config file
+            config_file: Path to configuration file
             
         Raises:
-            ConfigurationError: If file cannot be read
+            ConfigurationError: If file cannot be loaded
         """
-        path = Path(config_path)
-        if not path.exists():
-            raise ConfigurationError(f"Configuration file not found: {config_path}")
-            
+        config_path = Path(config_file)
+        
+        if not config_path.exists():
+            raise ConfigurationError(
+                f"Configuration file not found: {config_path}",
+                details={'path': str(config_path)}
+            )
+        
         try:
             self.config.read(config_path)
-            self.config_path = path
+            self._config_file = config_path
+            self._loaded = True
         except Exception as e:
-            raise ConfigurationError(f"Failed to read configuration file: {e}")
-            
-    def _load_default_locations(self) -> None:
-        """Load configuration from default locations"""
-        default_paths = [
-            Path('./config/thalos.ini'),
-            Path('./thalos.ini'),
-        ]
-        
-        for path in default_paths:
-            if path.exists():
-                try:
-                    self.config.read(str(path))
-                    self.config_path = path
-                    return
-                except Exception:
-                    continue  # Try next location
-                    
-        # No config file found - use defaults only
-        
+            raise ConfigurationError(
+                f"Failed to parse configuration file: {e}",
+                details={'path': str(config_path), 'error': str(e)}
+            )
+    
     def get(self, section: str, key: str, default: Any = None, 
-            type_cast: type = str) -> Any:
+            required: bool = False, value_type: type = str) -> Any:
         """
-        Get configuration value with environment override support.
-        
-        Precedence order:
-        1. Environment variable (THALOS_SECTION_KEY)
-        2. Config file value
-        3. Built-in default
-        4. Provided default parameter
+        Get configuration value with type conversion
         
         Args:
             section: Configuration section
             key: Configuration key
             default: Default value if not found
-            type_cast: Type to cast value to (str, int, float, bool)
+            required: Whether value is required
+            value_type: Type to convert value to
             
         Returns:
-            Configuration value with appropriate type
+            Configuration value converted to specified type
+            
+        Raises:
+            ConfigurationError: If required value is missing
+            ValidationError: If type conversion fails
         """
-        # Check environment variable first
-        env_key = f"THALOS_{section.upper()}_{key.upper()}"
-        env_value = os.environ.get(env_key)
-        if env_value is not None:
-            return self._cast_value(env_value, type_cast)
-            
-        # Check config file
-        if self.config.has_option(section, key):
-            value = self.config.get(section, key)
-            return self._cast_value(value, type_cast)
-            
-        # Check built-in defaults
-        if section in self._defaults and key in self._defaults[section]:
-            return self._defaults[section][key]
-            
-        # Use provided default
-        return default
+        if not self._loaded and default is None and required:
+            raise ConfigurationError(
+                "No configuration file loaded",
+                details={'section': section, 'key': key}
+            )
         
-    def get_section(self, section: str) -> Dict[str, Any]:
+        try:
+            if self.config.has_option(section, key):
+                raw_value = self.config.get(section, key)
+                return self._convert_type(raw_value, value_type, section, key)
+            elif required:
+                raise ConfigurationError(
+                    f"Required configuration missing: [{section}] {key}",
+                    details={'section': section, 'key': key}
+                )
+            else:
+                return default
+        except (configparser.NoSectionError, configparser.NoOptionError):
+            if required:
+                raise ConfigurationError(
+                    f"Required configuration missing: [{section}] {key}",
+                    details={'section': section, 'key': key}
+                )
+            return default
+    
+    def _convert_type(self, value: str, value_type: type, section: str, key: str) -> Any:
+        """Convert string value to specified type"""
+        try:
+            if value_type == bool:
+                return value.lower() in ('true', 'yes', '1', 'on')
+            elif value_type == int:
+                return int(value)
+            elif value_type == float:
+                return float(value)
+            elif value_type == list:
+                # Comma-separated values
+                return [v.strip() for v in value.split(',') if v.strip()]
+            else:
+                return value
+        except (ValueError, TypeError) as e:
+            raise ValidationError(
+                f"Invalid type for configuration value: [{section}] {key}",
+                field=f"{section}.{key}",
+                value=value,
+                details={'expected_type': value_type.__name__, 'error': str(e)}
+            )
+    
+    def get_section(self, section: str) -> Dict[str, str]:
         """
-        Get all values in a section.
+        Get all values from a section
         
         Args:
-            section: Configuration section name
+            section: Section name
             
         Returns:
             Dictionary of key-value pairs
         """
-        result = {}
-        
-        # Start with defaults
-        if section in self._defaults:
-            result.update(self._defaults[section])
-            
-        # Override with config file values
-        if self.config.has_section(section):
-            for key in self.config.options(section):
-                result[key] = self.config.get(section, key)
-                
-        # Apply environment overrides
-        env_prefix = f"THALOS_{section.upper()}_"
-        for env_key, env_value in os.environ.items():
-            if env_key.startswith(env_prefix):
-                key = env_key[len(env_prefix):].lower()
-                result[key] = env_value
-                
-        return result
-        
-    def set(self, section: str, key: str, value: Any) -> None:
-        """
-        Set configuration value.
-        
-        Args:
-            section: Configuration section
-            key: Configuration key
-            value: Value to set
-        """
         if not self.config.has_section(section):
-            self.config.add_section(section)
-            
-        self.config.set(section, key, str(value))
-        
-    def save(self, config_path: Optional[str] = None) -> None:
-        """
-        Save configuration to file.
-        
-        Args:
-            config_path: Path to save to. If None, uses loaded path.
-            
-        Raises:
-            ConfigurationError: If no path specified and no file was loaded
-        """
-        path = config_path or self.config_path
-        if path is None:
-            raise ConfigurationError("No configuration file path specified")
-            
-        try:
-            path = Path(path)
-            path.parent.mkdir(parents=True, exist_ok=True)
-            
-            with open(path, 'w') as f:
-                self.config.write(f)
-                
-        except Exception as e:
-            raise ConfigurationError(f"Failed to save configuration: {e}")
-            
-    def validate(self) -> bool:
-        """
-        Validate configuration.
-        
-        Ensures all required values are present and valid.
-        
-        Returns:
-            True if valid
-            
-        Raises:
-            ValidationError: If configuration is invalid
-        """
-        # Check required sections
-        required_sections = ['system', 'memory', 'codegen']
-        for section in required_sections:
-            # Section can be in defaults or config file
-            has_section = (section in self._defaults or 
-                          self.config.has_section(section))
-            if not has_section:
-                raise ValidationError(f"Missing required section: {section}")
-                
-        # Validate specific values
-        log_level = self.get('system', 'log_level', type_cast=str)
-        valid_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
-        if log_level not in valid_levels:
-            raise ValidationError(
-                f"Invalid log_level: {log_level}. Must be one of {valid_levels}"
-            )
-            
-        return True
-        
-    def _cast_value(self, value: str, type_cast: type) -> Any:
-        """
-        Cast string value to specified type.
-        
-        Args:
-            value: String value to cast
-            type_cast: Target type
-            
-        Returns:
-            Casted value
-            
-        Raises:
-            ValidationError: If cast fails
-        """
-        try:
-            if type_cast == bool:
-                # Handle boolean specially
-                if isinstance(value, bool):
-                    return value
-                return value.lower() in ('true', '1', 'yes', 'on')
-            elif type_cast == int:
-                return int(value)
-            elif type_cast == float:
-                return float(value)
-            else:
-                return str(value)
-        except (ValueError, AttributeError) as e:
-            raise ValidationError(
-                f"Failed to cast '{value}' to {type_cast.__name__}: {e}"
-            )
-            
-    def __repr__(self) -> str:
-        """String representation"""
-        path = self.config_path or "defaults"
-        sections = list(self._defaults.keys())
-        if self.config.sections():
-            sections.extend(self.config.sections())
-        sections = sorted(set(sections))
-        return f"ConfigManager(path={path}, sections={sections})"
-
-
-# Global config instance
-_config_instance: Optional[ConfigManager] = None
-
-
-def get_config() -> ConfigManager:
-    """
-    Get global configuration instance.
+            return {}
+        return dict(self.config.items(section))
     
-    Returns:
-        Global ConfigManager instance
-    """
-    global _config_instance
-    if _config_instance is None:
-        _config_instance = ConfigManager()
-    return _config_instance
+    def has_section(self, section: str) -> bool:
+        """Check if section exists"""
+        return self.config.has_section(section)
+    
+    def has_option(self, section: str, key: str) -> bool:
+        """Check if option exists"""
+        return self.config.has_option(section, key)
+    
+    def sections(self) -> List[str]:
+        """Get list of all sections"""
+        return self.config.sections()
+    
+    def validate_required(self, requirements: Dict[str, List[str]]) -> None:
+        """
+        Validate that required configuration values exist
+        
+        Args:
+            requirements: Dict mapping section names to lists of required keys
+            
+        Raises:
+            ConfigurationError: If any required values are missing
+        """
+        missing = []
+        
+        for section, keys in requirements.items():
+            if not self.config.has_section(section):
+                missing.append(f"Section [{section}]")
+                continue
+                
+            for key in keys:
+                if not self.config.has_option(section, key):
+                    missing.append(f"[{section}] {key}")
+        
+        if missing:
+            raise ConfigurationError(
+                f"Missing required configuration: {', '.join(missing)}",
+                details={'missing': missing}
+            )
+    
+    def to_dict(self) -> Dict[str, Dict[str, str]]:
+        """Convert configuration to nested dictionary"""
+        return {section: dict(self.config.items(section)) 
+                for section in self.config.sections()}
+    
+    def __repr__(self) -> str:
+        if self._config_file:
+            return f"Config(file='{self._config_file}', sections={len(self.config.sections())})"
+        return f"Config(loaded={self._loaded}, sections={len(self.config.sections())})"
 
 
-def initialize_config(config_path: Optional[str] = None) -> ConfigManager:
+# Global configuration instance
+_global_config: Optional[Config] = None
+
+
+def get_config(config_file: Optional[Union[str, Path]] = None) -> Config:
     """
-    Initialize global configuration with specific path.
+    Get global configuration instance
     
     Args:
-        config_path: Path to configuration file
+        config_file: Path to config file (only used on first call)
         
     Returns:
-        Initialized ConfigManager instance
+        Global Config instance
     """
-    global _config_instance
-    _config_instance = ConfigManager(config_path)
-    return _config_instance
+    global _global_config
+    if _global_config is None:
+        _global_config = Config(config_file)
+    return _global_config
+
+
+def load_config(config_file: Union[str, Path]) -> Config:
+    """
+    Load configuration file
+    
+    Args:
+        config_file: Path to configuration file
+        
+    Returns:
+        Loaded Config instance
+    """
+    global _global_config
+    _global_config = Config(config_file)
+    return _global_config

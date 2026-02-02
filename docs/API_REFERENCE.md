@@ -1,810 +1,613 @@
-# Thalos Prime - API Reference
+# Thalos Prime API Reference
 
-**Version:** 1.0.0  
-**Copyright © 2026 Tony Ray Macier III. All rights reserved.**
+**© 2026 Tony Ray Macier III. All rights reserved.**
+
+Complete API documentation for Thalos Prime v1.5 - Synthetic Biological Intelligence System.
 
 ---
 
 ## Table of Contents
 
-1. [Core System API](#core-system-api)
-2. [Memory API](#memory-api)
-3. [Code Generation API](#code-generation-api)
-4. [CLI API](#cli-api)
-5. [REST API](#rest-api)
-6. [Configuration API](#configuration-api)
-7. [Logging API](#logging-api)
-8. [Utilities API](#utilities-api)
+1. [Python API](#python-api)
+2. [REST API](#rest-api)
+3. [CLI Interface](#cli-interface)
+4. [Chatbot Commands](#chatbot-commands)
 
 ---
 
-## Core System API
+## Python API
 
-### CIS (Central Intelligence System)
+### Core System (CIS)
 
-The primary system orchestrator. All subsystems are owned and managed by CIS.
-
-#### Class: `CIS`
-
-**Location:** `src/core/cis/controller.py`
-
-**Lifecycle Methods (Required):**
+#### CIS Controller
 
 ```python
-def __init__() -> None
-    """Initialize CIS control unit"""
+from core.cis.controller import CIS
 
-def initialize() -> bool
-    """
-    Initialize CIS - allocate resources, verify preconditions
-    Returns: True if successful
-    """
-
-def validate() -> bool
-    """
-    Validate configuration and dependencies
-    Blocks startup if invalid
-    Returns: True if valid
-    """
-
-def boot() -> bool
-    """
-    Boot system - initialize all subsystems
-    Returns: True if successful
-    """
-
-def operate() -> Dict[str, Any]
-    """
-    Perform operations - return current status
-    Returns: Operational status dictionary
-    """
-
-def reconcile() -> bool
-    """
-    Reconcile internal state - fix inconsistencies
-    Returns: True if successful
-    """
-
-def checkpoint() -> Dict[str, Any]
-    """
-    Checkpoint state - persist for recovery
-    Returns: Serialized state dictionary
-    """
-
-def terminate() -> bool
-    """
-    Terminate cleanly - leave system restartable
-    Returns: True if successful
-    """
-```
-
-**Subsystem Access Methods:**
-
-```python
-def get_memory() -> Optional[MemoryModule]
-    """Get CIS-owned memory subsystem"""
-
-def get_codegen() -> Optional[CodeGenerator]
-    """Get CIS-owned codegen subsystem"""
-
-def get_cli() -> Optional[CLI]
-    """Get CIS-owned CLI interface"""
-
-def get_api() -> Optional[API]
-    """Get CIS-owned REST API interface"""
-```
-
-**State Query Methods:**
-
-```python
-def status() -> Dict[str, Any]
-    """
-    Get system status
-    
-    Returns:
-        {
-            'version': str,
-            'status': str,  # 'created', 'operational', 'error'
-            'booted': bool,
-            'subsystems': {
-                'memory': bool,
-                'codegen': bool,
-                'cli': bool,
-                'api': bool
-            }
-        }
-    """
-
-def shutdown() -> bool
-    """
-    Shutdown system cleanly
-    Returns: True if successful
-    """
-```
-
-**Example Usage:**
-
-```python
-from src.core.cis import CIS
-
-# Create and boot
+# Initialize system
 cis = CIS()
-if cis.boot():
-    # Access subsystems
-    memory = cis.get_memory()
-    
-    # Check status
-    status = cis.status()
-    
-    # Checkpoint
-    state = cis.checkpoint()
-    
-    # Cleanup
-    cis.shutdown()
-```
 
----
+# Boot all subsystems
+success = cis.boot()  # Returns: bool
 
-## Memory API
+# Get system status
+status = cis.status()
+# Returns: {
+#     'version': str,
+#     'status': str,
+#     'booted': bool,
+#     'subsystems': dict
+# }
 
-### MemoryModule
+# Shutdown system
+cis.shutdown()  # Returns: bool
 
-Key-value storage with persistence support.
-
-**Location:** `src/core/memory/storage.py`
-
-#### Methods:
-
-```python
-def store(key: str, value: Any) -> None
-    """
-    Store value with key
-    
-    Args:
-        key: Storage key
-        value: Value to store
-        
-    Raises:
-        KeyExistsError: If key already exists
-    """
-
-def retrieve(key: str) -> Any
-    """
-    Retrieve value by key
-    
-    Args:
-        key: Storage key
-        
-    Returns:
-        Stored value
-        
-    Raises:
-        KeyNotFoundError: If key not found
-    """
-
-def update(key: str, value: Any) -> None
-    """
-    Update existing key
-    
-    Args:
-        key: Storage key
-        value: New value
-        
-    Raises:
-        KeyNotFoundError: If key not found
-    """
-
-def delete(key: str) -> None
-    """
-    Delete key
-    
-    Args:
-        key: Storage key
-        
-    Raises:
-        KeyNotFoundError: If key not found
-    """
-
-def list_keys() -> List[str]
-    """
-    List all keys
-    
-    Returns:
-        List of key names
-    """
-
-def exists(key: str) -> bool
-    """
-    Check if key exists
-    
-    Args:
-        key: Storage key
-        
-    Returns:
-        True if key exists
-    """
-
-def clear() -> None
-    """Clear all stored data"""
-```
-
-**Example Usage:**
-
-```python
+# Access subsystems
 memory = cis.get_memory()
-
-# Store data
-memory.store("user_name", "Alice")
-memory.store("count", 42)
-
-# Retrieve data
-name = memory.retrieve("user_name")  # "Alice"
-
-# Update
-memory.update("count", 43)
-
-# Check existence
-if memory.exists("user_name"):
-    print("User found")
-
-# List keys
-keys = memory.list_keys()
-
-# Delete
-memory.delete("count")
-```
-
----
-
-## Code Generation API
-
-### CodeGenerator
-
-Generate Python code from templates.
-
-**Location:** `src/codegen/generator.py`
-
-#### Methods:
-
-```python
-def generate_class(name: str, methods: List[str] = None,
-                   attributes: List[str] = None) -> str
-    """
-    Generate Python class
-    
-    Args:
-        name: Class name
-        methods: List of method names
-        attributes: List of attribute names
-        
-    Returns:
-        Generated Python code
-        
-    Raises:
-        ValidationError: If name is invalid
-    """
-
-def generate_function(name: str, parameters: List[str] = None,
-                     return_type: str = None) -> str
-    """
-    Generate Python function
-    
-    Args:
-        name: Function name
-        parameters: List of parameter names
-        return_type: Return type annotation
-        
-    Returns:
-        Generated Python code
-    """
-
-def clear_history() -> None
-    """Clear generation history"""
-```
-
-**Example Usage:**
-
-```python
 codegen = cis.get_codegen()
-
-# Generate class
-code = codegen.generate_class(
-    name="UserManager",
-    methods=["create", "read", "update", "delete"],
-    attributes=["users", "database"]
-)
-
-# Generate function
-func_code = codegen.generate_function(
-    name="calculate_total",
-    parameters=["items", "tax_rate"],
-    return_type="float"
-)
-```
-
----
-
-## CLI API
-
-### CLI Interface
-
-Command-line interface for system interaction.
-
-**Location:** `src/interfaces/cli/cli.py`
-
-#### Methods:
-
-```python
-def execute(args: List[str]) -> str
-    """
-    Execute CLI command
-    
-    Args:
-        args: Command arguments
-        
-    Returns:
-        Command output
-    """
-```
-
-**Available Commands:**
-
-```bash
-# System commands
-status                    # Show system status
-boot                      # Boot system
-shutdown                  # Shutdown system
-
-# Memory commands
-memory create <key> <value>   # Create entry
-memory read <key>             # Read entry
-memory update <key> <value>   # Update entry
-memory delete <key>           # Delete entry
-memory list                   # List all keys
-
-# Codegen commands
-codegen class <name> --methods <m1> <m2>
-codegen function <name> --params <p1> <p2>
-```
-
-**Example Usage:**
-
-```python
 cli = cis.get_cli()
+api = cis.get_api()
+```
 
-# Execute command
-result = cli.execute(['status'])
-print(result)
+#### System Orchestrator
 
-result = cli.execute(['memory', 'create', 'key1', 'value1'])
+```python
+from core.cis.orchestrator import SystemOrchestrator, SubsystemProtocol
+
+# Create orchestrator
+orchestrator = SystemOrchestrator()
+
+# Register subsystem
+orchestrator.register_subsystem(
+    name="my_subsystem",
+    subsystem=my_subsystem_instance,
+    depends_on=["dependency1", "dependency2"]
+)
+
+# Initialize all subsystems
+orchestrator.initialize_all()
+
+# Validate all subsystems
+orchestrator.validate_all()
+
+# Create checkpoint
+orchestrator.checkpoint_all()
+
+# Get system state
+state = orchestrator.get_system_state()
+
+# Monitor health
+health = orchestrator.monitor_health()
+
+# Terminate gracefully
+orchestrator.terminate_all()
+```
+
+### Memory Systems
+
+#### Basic Memory
+
+```python
+from core.memory.storage import MemoryModule
+
+memory = MemoryModule()
+
+# CRUD operations
+memory.create(key="username", value="alice")
+value = memory.read(key="username")  # Returns: "alice"
+memory.update(key="username", value="bob")
+memory.delete(key="username")
+
+# List operations
+keys = memory.list()  # Returns: dict of all entries
+count = memory.count()  # Returns: int
+exists = memory.exists(key="username")  # Returns: bool
+
+# Clear all
+memory.clear()
+```
+
+#### Advanced Memory
+
+```python
+from core.memory.advanced_memory import AdvancedMemorySystem
+
+memory = AdvancedMemorySystem(storage_path="data/memory")
+
+# Create with metadata
+memory.create(
+    key="user_profile",
+    value={"name": "Alice", "role": "admin"},
+    tags=["user", "admin"],
+    related_keys=["user_settings", "user_logs"]
+)
+
+# Full-text search
+results = memory.search(query="admin user", limit=10)
+# Returns: [(key, value, score), ...]
+
+# Find by tag
+entries = memory.find_by_tag(tag="admin")
+
+# Find related entries
+related = memory.find_related(key="user_profile", depth=2)
+
+# Get version history
+history = memory.get_version_history(key="user_profile")
+
+# Restore version
+memory.restore_version(key="user_profile", version=2)
+
+# Export as graph
+graph = memory.export_graph()
+# Returns: {'nodes': [...], 'edges': [...]}
+
+# Get statistics
+stats = memory.get_statistics()
+
+# Optimize indexes
+results = memory.optimize()
+```
+
+### Code Generation
+
+```python
+from codegen.generator import CodeGenerator
+
+codegen = CodeGenerator()
+
+# Generate code from template
+code = codegen.generate(
+    template_name="class",
+    params={
+        "name": "DataProcessor",
+        "methods": ["process", "validate"]
+    }
+)
+
+# List available templates
+templates = codegen.list_templates()
+
+# Get generation history
+history = codegen.get_history()
+
+# Clear history
+codegen.clear_history()
+```
+
+### AI Modules
+
+#### Neural Pathway Optimizer
+
+```python
+from ai.optimization.neural_optimizer import NeuralPathwayOptimizer
+
+optimizer = NeuralPathwayOptimizer(
+    learning_rate=0.01,
+    prune_threshold=0.1
+)
+
+# Optimize entire network
+results = optimizer.optimize_network(neural_network)
+# Returns: {
+#     'initial_connections': int,
+#     'final_connections': int,
+#     'pruned': int,
+#     'consolidated': int,
+#     'energy_saved': float
+# }
+
+# Optimize single synapse
+new_weight = optimizer.optimize_synapse(synapse, activity=0.8)
+
+# Get statistics
+stats = optimizer.get_pathway_statistics()
+metrics = optimizer.get_optimization_metrics()
+```
+
+#### Advanced Reasoning Engine
+
+```python
+from ai.reasoning.advanced_reasoning import AdvancedReasoningEngine
+
+reasoning = AdvancedReasoningEngine()
+
+# Add facts
+reasoning.add_fact("sky is blue")
+reasoning.add_fact("grass is green")
+
+# Add rules
+reasoning.add_rule(
+    conditions=["it is raining", "sky is cloudy"],
+    conclusion="use umbrella",
+    confidence=0.95
+)
+
+# Forward chaining inference
+new_facts = reasoning.forward_chain()
+
+# Backward chaining (prove goal)
+provable = reasoning.backward_chain(goal="use umbrella")
+
+# Abductive reasoning (find explanations)
+explanations = reasoning.abductive_reasoning(observation="wet ground")
+
+# Causal inference
+effects = reasoning.causal_inference(cause="rain", max_depth=3)
+
+# Analogical reasoning
+inferred = reasoning.analogical_reasoning(
+    source="bird",
+    target="airplane",
+    mapping={"wings": "wings", "flies": "flies"}
+)
+
+# Query
+answer = reasoning.query("why is the sky blue?")
+
+# Get statistics
+stats = reasoning.get_reasoning_statistics()
+```
+
+#### Predictive Analytics
+
+```python
+from ai.optimization.predictive_analytics import PredictiveAnalyticsEngine
+
+analytics = PredictiveAnalyticsEngine(window_size=50)
+
+# Add data points
+analytics.add_data_point(series_name="temperature", value=72.5)
+analytics.add_data_point(series_name="temperature", value=73.1)
+
+# Predict future values
+predictions = analytics.predict_next(series_name="temperature", steps=5)
+# Returns: [
+#     {
+#         'value': float,
+#         'lower_bound': float,
+#         'upper_bound': float,
+#         'confidence': float,
+#         'step': int
+#     },
+#     ...
+# ]
+
+# Detect trend
+trend = analytics.detect_trend(series_name="temperature")
+# Returns: {
+#     'trend': str,  # 'increasing', 'decreasing', 'stable'
+#     'slope': float,
+#     'strength': float,
+#     'change_percent': float
+# }
+
+# Detect anomalies
+anomalies = analytics.detect_anomalies(series_name="temperature", threshold=2.5)
+
+# Forecast probability
+probability = analytics.forecast_probability(
+    series_name="temperature",
+    target_value=80.0,
+    horizon=10
+)
+
+# Analyze correlation
+correlation = analytics.analyze_correlation("temperature", "humidity")
+
+# Get summary
+summary = analytics.get_analytics_summary()
+```
+
+### Utilities
+
+#### Configuration
+
+```python
+from core.config import Config, get_config
+
+# Load configuration
+config = Config(config_file="config/thalos.ini")
+
+# Get values with type conversion
+name = config.get("system", "name", value_type=str)
+port = config.get("server", "port", value_type=int, default=8000)
+debug = config.get("system", "debug", value_type=bool, default=False)
+
+# Validate required config
+config.validate_required({
+    "system": ["name", "version"],
+    "server": ["port"]
+})
+
+# Get entire section
+server_config = config.get_section("server")
+
+# Global config instance
+config = get_config()
+```
+
+#### Logging
+
+```python
+from core.logging import get_logger
+
+logger = get_logger()
+
+# Standard logging
+logger.debug("Debug message")
+logger.info("Info message")
+logger.warning("Warning message")
+logger.error("Error message")
+logger.critical("Critical message")
+logger.exception("Exception occurred")
+
+# Lifecycle logging
+logger.lifecycle(
+    phase="initialize",
+    subsystem="memory",
+    status="success"
+)
+
+# State transition logging
+logger.state_transition(
+    subsystem="cis",
+    from_state="initializing",
+    to_state="operational"
+)
+```
+
+#### Validators
+
+```python
+from core.utils import Validator, Result
+
+# Validate inputs
+username = Validator.not_empty("alice", field="username")
+password = Validator.min_length("secret123", min_len=8, field="password")
+age = Validator.in_range(25, min_val=0, max_val=150, field="age")
+email = Validator.matches_pattern("user@example.com", r"^[\w\.-]+@[\w\.-]+\.\w+$")
+
+# Use Result type for explicit error handling
+result = Result.ok(42)
+if result.is_ok():
+    value = result.unwrap()
+
+result = Result.fail("Operation failed")
+if result.is_err():
+    error = result.error()
 ```
 
 ---
 
 ## REST API
 
-### API Endpoints
+Base URL: `http://localhost:8000`
 
-HTTP REST interface for remote access.
+### Chat Endpoint
 
-**Location:** `src/interfaces/api/server.py`
+**POST** `/api/chat`
 
-**Base URL:** `http://localhost:5000`
+Unrestricted conversational AI with full system access.
 
-#### Endpoints:
-
-**Health Check:**
-```http
-GET /health
-```
-Response:
-```json
-{"status": "healthy", "version": "1.0"}
-```
-
-**System Status:**
-```http
-GET /api/status
-```
-Response:
+**Request:**
 ```json
 {
-    "version": "1.0",
+  "message": "execute code: print(2+2)"
+}
+```
+
+**Response:**
+```json
+{
+  "response": "Code executed successfully:\n4",
+  "status": "success",
+  "timestamp": "2026-01-16T22:30:00.000Z"
+}
+```
+
+### System Status
+
+**GET** `/api/status`
+
+Get complete system status.
+
+**Response:**
+```json
+{
+  "cis": {
+    "version": "1.5.0",
     "status": "operational",
     "booted": true,
     "subsystems": {
-        "memory": true,
-        "codegen": true,
-        "cli": true,
-        "api": true
+      "memory": true,
+      "codegen": true,
+      "cli": true,
+      "api": true
     }
+  },
+  "memory_entries": 42,
+  "system_health": "OPERATIONAL",
+  "version": "1.5.0"
 }
 ```
 
-**Memory Operations:**
+### Memory Operations
 
-Create:
-```http
-POST /api/memory
-Content-Type: application/json
+**GET** `/api/memory`
 
+Get all memory entries.
+
+**Response:**
+```json
 {
-    "key": "user_id",
-    "value": "12345"
+  "entries": {
+    "key1": "value1",
+    "key2": "value2"
+  },
+  "count": 2
 }
 ```
 
-Read:
-```http
-GET /api/memory/<key>
-```
+### Code Execution
 
-Update:
-```http
-PUT /api/memory/<key>
-Content-Type: application/json
+**POST** `/api/execute`
 
+Execute arbitrary Python code (unrestricted).
+
+**Request:**
+```json
 {
-    "value": "new_value"
+  "code": "result = 2 + 2\nprint(f'Result: {result}')"
 }
 ```
 
-Delete:
-```http
-DELETE /api/memory/<key>
-```
-
-List:
-```http
-GET /api/memory
-```
-
-**Code Generation:**
-
-Generate Class:
-```http
-POST /api/codegen/class
-Content-Type: application/json
-
+**Response:**
+```json
 {
-    "name": "MyClass",
-    "methods": ["method1", "method2"],
-    "attributes": ["attr1"]
-}
-```
-
-Generate Function:
-```http
-POST /api/codegen/function
-Content-Type: application/json
-
-{
-    "name": "my_function",
-    "parameters": ["param1", "param2"],
-    "return_type": "str"
+  "output": "Result: 4\n",
+  "status": "success"
 }
 ```
 
 ---
 
-## Configuration API
+## CLI Interface
 
-### ConfigManager
+```bash
+# Boot system
+python src/main.py
 
-Configuration management with INI file support.
+# Get status
+python src/main.py status
 
-**Location:** `src/core/config.py`
+# Memory operations
+python src/main.py memory create mykey myvalue
+python src/main.py memory read mykey
+python src/main.py memory update mykey newvalue
+python src/main.py memory delete mykey
+python src/main.py memory list
 
-#### Methods:
+# Code generation
+python src/main.py codegen class MyClass --methods process validate
+python src/main.py codegen function my_function
 
-```python
-def get(section: str, key: str, default: Any = None,
-        type_cast: type = str) -> Any
-    """
-    Get configuration value
-    
-    Precedence: ENV > File > Defaults > Parameter
-    
-    Args:
-        section: Config section
-        key: Config key
-        default: Default value
-        type_cast: Type to cast to (str, int, float, bool)
-        
-    Returns:
-        Configuration value
-    """
-
-def get_section(section: str) -> Dict[str, Any]
-    """Get all values in section"""
-
-def set(section: str, key: str, value: Any) -> None
-    """Set configuration value"""
-
-def save(config_path: Optional[str] = None) -> None
-    """Save configuration to file"""
-
-def validate() -> bool
-    """
-    Validate configuration
-    
-    Returns:
-        True if valid
-        
-    Raises:
-        ValidationError: If invalid
-    """
-```
-
-**Example Usage:**
-
-```python
-from src.core.config import get_config, initialize_config
-
-# Get global config
-config = get_config()
-
-# Get values
-debug = config.get('system', 'debug', default=False, type_cast=bool)
-log_level = config.get('system', 'log_level', default='INFO')
-
-# Get section
-memory_config = config.get_section('memory')
-
-# Initialize with custom file
-config = initialize_config('./my_config.ini')
+# Help
+python src/main.py --help
 ```
 
 ---
 
-## Logging API
+## Chatbot Commands
 
-### ThalosLogger
+The immersive interface supports natural language commands:
 
-Singleton logger with structured logging.
-
-**Location:** `src/core/logging.py`
-
-#### Methods:
-
-```python
-def configure(level: str = 'INFO', log_file: Optional[str] = None,
-             console: bool = True, format_string: Optional[str] = None) -> None
-    """Configure logger settings"""
-
-def debug(message: str, **kwargs) -> None
-    """Log debug message"""
-
-def info(message: str, **kwargs) -> None
-    """Log info message"""
-
-def warning(message: str, **kwargs) -> None
-    """Log warning message"""
-
-def error(message: str, **kwargs) -> None
-    """Log error message"""
-
-def critical(message: str, **kwargs) -> None
-    """Log critical message"""
-
-def exception(message: str, exc_info=True, **kwargs) -> None
-    """Log exception with traceback"""
-
-def log_lifecycle(subsystem: str, event: str, success: bool = True,
-                 details: Optional[dict] = None) -> None
-    """Log lifecycle event"""
-
-def log_state_transition(subsystem: str, from_state: str,
-                        to_state: str, reason: Optional[str] = None) -> None
-    """Log state transition"""
+### Code Execution
+```
+execute this code: print("Hello World")
+run code: for i in range(5): print(i)
 ```
 
-**Example Usage:**
+### System Commands
+```
+run command ls -la
+shell: pwd
+bash: echo "Hello"
+```
 
-```python
-from src.core.logging import get_logger, configure_logging
+### Memory Operations
+```
+remember username as Alice
+store api_key as xyz123
+recall username
+get memory key
+list all memory
+```
 
-# Get logger
-logger = get_logger()
+### Code Generation
+```
+generate a Python class named DataProcessor
+create a function called process_data
+generate class MyClass with methods init and run
+```
 
-# Configure
-logger.configure(level='DEBUG', log_file='./logs/thalos.log')
+### Data Analysis
+```
+analyze system status
+examine current state
+show system metrics
+```
 
-# Log messages
-logger.info("System starting")
-logger.debug("Debug information")
-logger.error("An error occurred")
+### System Control
+```
+status
+boot
+restart
+shutdown
+```
 
-# Log lifecycle
-logger.log_lifecycle('CIS', 'boot', success=True)
+### File Operations
+```
+read file config.txt
+list files
+```
 
-# Log state transition
-logger.log_state_transition('CIS', 'created', 'operational', 'Boot complete')
+### Questions
+```
+what are you?
+how do you work?
+what can you do?
 ```
 
 ---
 
-## Utilities API
+## Error Handling
 
-### Result Type
+All APIs use consistent error responses:
 
-Deterministic error handling without exceptions.
-
-**Location:** `src/core/utils.py`
-
-```python
-# Create results
-result = Result.ok(value)
-result = Result.err("error message")
-
-# Check status
-if result.success:
-    value = result.value
-
-# Unwrap
-value = result.unwrap_or(default_value)
-
-# Map
-new_result = result.map(lambda x: x * 2)
+```json
+{
+  "error": "Error message",
+  "status": "error",
+  "details": {}
+}
 ```
 
-### Validators
+Exceptions follow the hierarchy in `core.exceptions`:
+- `ThalosError` - Base exception
+- `CISError` - CIS-related errors
+- `ValidationError` - Validation failures
+- `StateError` - Invalid state transitions
+- `LifecycleError` - Lifecycle violations
 
-```python
-from src.core.utils import Validator
+---
 
-# Validate
-result = Validator.is_not_empty("value", "field_name")
-result = Validator.is_valid_identifier("my_var")
-result = Validator.is_in_range(5, 0, 10)
-result = Validator.is_positive(42)
+## Advanced Features
 
-if result.valid:
-    print("Valid")
-else:
-    print(f"Errors: {result.errors}")
-```
+### Self-Healing
+The system automatically recovers from failures:
+- Automatic reconciliation
+- Checkpoint restoration
+- Subsystem reinitialization
+
+### Lifecycle Management
+All subsystems implement:
+- `initialize()` - Setup and resource allocation
+- `validate()` - State validation
+- `operate()` - Core functionality
+- `reconcile()` - Consistency restoration
+- `checkpoint()` - State persistence
+- `terminate()` - Graceful shutdown
 
 ### State Management
-
-```python
-from src.core.utils import (
-    serialize_state,
-    deserialize_state,
-    version_state,
-    timestamp
-)
-
-# Serialize
-state = {'key': 'value'}
-json_str = serialize_state(state)
-
-# Deserialize
-state = deserialize_state(json_str)
-
-# Version
-versioned = version_state(state, version="1.0")
-
-# Timestamp
-ts = timestamp()
-```
+All state is:
+- Observable via APIs
+- Serializable to JSON
+- Versioned with history
+- Reconstructible from checkpoints
 
 ---
 
-## Exception Hierarchy
+**For more information, visit the repository or contact the author.**
 
-**Location:** `src/core/exceptions.py`
-
-```
-ThalosError (base)
-├── CISError
-├── SubsystemError
-│   ├── MemoryError
-│   │   ├── KeyNotFoundError
-│   │   └── KeyExistsError
-│   └── CodeGenError
-├── ValidationError
-├── StateError
-├── ConfigurationError
-├── InitializationError
-├── OperationError
-├── InterfaceError
-├── LifecycleError
-├── ReconciliationError
-└── CheckpointError
-```
-
-**Usage:**
-
-```python
-from src.core.exceptions import (
-    ThalosError,
-    CISError,
-    MemoryError,
-    KeyNotFoundError,
-    ValidationError
-)
-
-try:
-    memory.retrieve("nonexistent")
-except KeyNotFoundError as e:
-    print(f"Key not found: {e}")
-except MemoryError as e:
-    print(f"Memory error: {e}")
-```
-
----
-
-## Complete Example
-
-```python
-#!/usr/bin/env python3
-"""
-Complete Thalos Prime example showing proper CIS ownership pattern
-"""
-
-from src.core.cis import CIS
-from src.core.logging import configure_logging
-from src.core.config import initialize_config
-from src.core.exceptions import ThalosError
-
-def main():
-    # Configure logging
-    configure_logging(level='INFO', log_file='./logs/thalos.log')
-    
-    # Load configuration
-    config = initialize_config('./config/thalos.ini')
-    
-    # Create and boot CIS
-    cis = CIS()
-    
-    if not cis.boot():
-        print("Boot failed")
-        return 1
-        
-    try:
-        # Access CIS-owned subsystems
-        memory = cis.get_memory()
-        codegen = cis.get_codegen()
-        
-        # Use memory
-        memory.store("app_name", "Thalos Prime")
-        memory.store("version", "1.0.0")
-        
-        # Use codegen
-        code = codegen.generate_class(
-            "DataProcessor",
-            methods=["process", "validate", "export"]
-        )
-        print(code)
-        
-        # Check status
-        status = cis.status()
-        print(f"System: {status['status']}")
-        
-        # Checkpoint
-        checkpoint = cis.checkpoint()
-        print(f"State checkpointed: {len(checkpoint)} keys")
-        
-    except ThalosError as e:
-        print(f"Error: {e}")
-        return 1
-        
-    finally:
-        # Always cleanup
-        cis.shutdown()
-        
-    return 0
-
-if __name__ == "__main__":
-    exit(main())
-```
-
----
-
-**For more information, see:**
-- [README.md](../README.md) - System overview and quick start
-- [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) - Implementation details
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture
-
-**Copyright © 2026 Tony Ray Macier III. All rights reserved.**
+**Thalos Prime™ - Where Silicon Meets Synapse. Where Code Becomes Consciousness.**

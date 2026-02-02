@@ -1,5 +1,9 @@
 """
-Thalos Prime - Unit Tests
+© 2026 Tony Ray Macier III. All rights reserved.
 
-Unit tests for individual components.
+Thalos Prime™ is a proprietary system.
+"""
+
+"""
+Unit Tests for Thalos Prime
 """

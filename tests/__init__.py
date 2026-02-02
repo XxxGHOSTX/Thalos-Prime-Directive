@@ -1,7 +1,9 @@
 """
-Thalos Prime - Test Suite
+© 2026 Tony Ray Macier III. All rights reserved.
 
-Test package for Thalos Prime system.
+Thalos Prime™ is a proprietary system.
 """
 
-__version__ = "1.0.0"
+"""
+Thalos Prime Test Suite
+"""

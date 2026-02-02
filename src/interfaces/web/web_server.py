@@ -45,6 +45,7 @@ nlp = NLPProcessor()
 print("✓ NLP Processor initialized")
 
 # Initialize Action Handler
+
 action_handler = ActionHandler(cis)
 print("✓ Action Handler initialized")
 

@@ -1,28 +1,20 @@
 """
 © 2026 Tony Ray Macier III. All rights reserved.
 
-Thalos Prime is an original proprietary software system, including but not limited to
-its source code, system architecture, internal logic descriptions, documentation,
-interfaces, diagrams, and design materials.
-
-Unauthorized reproduction, modification, distribution, public display, or use of
-this software or its associated materials is strictly prohibited without the
-express written permission of the copyright holder.
-
 Thalos Prime™ is a proprietary system.
 """
 
 """
-Thalos Prime - Utility Functions
+Thalos Prime Utility Functions
 
-Validators, Result class, and deterministic helpers.
+Common utilities including validators, Result class, and deterministic helpers.
 """
 
 import re
-import json
-from typing import Any, Dict, List, Optional, Union, Callable, TypeVar, Generic
+import hashlib
+from typing import Any, Optional, Union, List, Dict, TypeVar, Generic
 from datetime import datetime
-from enum import Enum
+from .exceptions import ValidationError
 
 
 T = TypeVar('T')
@@ -30,295 +22,266 @@ T = TypeVar('T')
 
 class Result(Generic[T]):
     """
-    Result type for deterministic error handling.
+    Result type for explicit success/failure handling
     
-    Replaces exceptions with explicit success/failure returns.
-    Inspired by Rust's Result<T, E> type.
+    Forces explicit error handling instead of exceptions for expected failures.
     """
     
-    def __init__(self, value: Optional[T] = None, error: Optional[str] = None,
-                 success: bool = True):
+    def __init__(self, value: Optional[T] = None, error: Optional[str] = None, 
+                 success: bool = True, details: Optional[Dict] = None):
         """
-        Initialize result.
+        Create a Result
         
         Args:
-            value: Success value
-            error: Error message
+            value: The successful value
+            error: Error message if failed
             success: Whether operation succeeded
+            details: Additional details
         """
-        self._success = success
         self._value = value
         self._error = error
-        
-    @property
-    def success(self) -> bool:
+        self._success = success
+        self._details = details or {}
+    
+    @classmethod
+    def ok(cls, value: T) -> 'Result[T]':
+        """Create a successful Result"""
+        return cls(value=value, success=True)
+    
+    @classmethod
+    def fail(cls, error: str, details: Optional[Dict] = None) -> 'Result[T]':
+        """Create a failed Result"""
+        return cls(error=error, success=False, details=details)
+    
+    def is_ok(self) -> bool:
         """Check if result is successful"""
         return self._success
-        
-    @property
-    def failure(self) -> bool:
-        """Check if result is failure"""
+    
+    def is_err(self) -> bool:
+        """Check if result is an error"""
         return not self._success
+    
+    def unwrap(self) -> T:
+        """
+        Get the value, raising exception if failed
         
-    @property
-    def value(self) -> T:
-        """Get success value (raises if failure)"""
-        if self._success:
-            return self._value
-        raise ValueError(f"Cannot get value from failed result: {self._error}")
+        Raises:
+            ValueError: If result is an error
+        """
+        if not self._success:
+            raise ValueError(f"Called unwrap on error Result: {self._error}")
+        return self._value
+    
+    def unwrap_or(self, default: T) -> T:
+        """Get the value or return default if failed"""
+        return self._value if self._success else default
+    
+    def expect(self, message: str) -> T:
+        """
+        Get the value or raise with custom message
         
-    @property
+        Args:
+            message: Custom error message
+            
+        Raises:
+            ValueError: If result is an error
+        """
+        if not self._success:
+            raise ValueError(f"{message}: {self._error}")
+        return self._value
+    
     def error(self) -> Optional[str]:
         """Get error message"""
         return self._error
-        
-    def unwrap(self) -> T:
-        """Unwrap value (raises if failure) - alias for .value"""
-        return self.value
-        
-    def unwrap_or(self, default: T) -> T:
-        """Unwrap value or return default"""
-        return self._value if self._success else default
-        
-    def map(self, func: Callable[[T], Any]) -> 'Result':
-        """Apply function to value if successful"""
-        if self._success:
-            try:
-                new_value = func(self._value)
-                return Result(value=new_value, success=True)
-            except Exception as e:
-                return Result(error=str(e), success=False)
-        return self
-        
-    def __repr__(self) -> str:
-        """String representation"""
-        if self._success:
-            return f"Result(success=True, value={self._value})"
-        return f"Result(success=False, error={self._error})"
-        
-    @staticmethod
-    def ok(value: T) -> 'Result[T]':
-        """Create successful result"""
-        return Result(value=value, success=True)
-        
-    @staticmethod
-    def err(error: str) -> 'Result[T]':
-        """Create failed result"""
-        return Result(error=error, success=False)
-
-
-class ValidationResult:
-    """
-    Validation result with detailed error information.
-    """
     
-    def __init__(self, valid: bool = True, errors: Optional[List[str]] = None):
-        """
-        Initialize validation result.
-        
-        Args:
-            valid: Whether validation passed
-            errors: List of validation errors
-        """
-        self.valid = valid
-        self.errors = errors or []
-        
-    def add_error(self, error: str) -> None:
-        """Add validation error"""
-        self.valid = False
-        self.errors.append(error)
-        
-    def merge(self, other: 'ValidationResult') -> 'ValidationResult':
-        """Merge with another validation result"""
-        return ValidationResult(
-            valid=self.valid and other.valid,
-            errors=self.errors + other.errors
-        )
-        
-    def __bool__(self) -> bool:
-        """Allow use in boolean context"""
-        return self.valid
-        
+    def details(self) -> Dict:
+        """Get additional details"""
+        return self._details
+    
     def __repr__(self) -> str:
-        """String representation"""
-        if self.valid:
-            return "ValidationResult(valid=True)"
-        return f"ValidationResult(valid=False, errors={self.errors})"
+        if self._success:
+            return f"Result.ok({self._value})"
+        return f"Result.fail({self._error})"
 
 
 class Validator:
     """
-    Static validators for common validation tasks.
+    Collection of validation functions
+    
+    All validators raise ValidationError on failure.
     """
     
     @staticmethod
-    def is_not_empty(value: str, field_name: str = "value") -> ValidationResult:
+    def not_empty(value: str, field: str = "value") -> str:
         """Validate string is not empty"""
         if not value or not value.strip():
-            return ValidationResult(valid=False, 
-                                  errors=[f"{field_name} cannot be empty"])
-        return ValidationResult(valid=True)
-        
+            raise ValidationError(
+                f"{field} cannot be empty",
+                field=field,
+                value=value
+            )
+        return value.strip()
+    
     @staticmethod
-    def is_valid_identifier(value: str, field_name: str = "identifier") -> ValidationResult:
-        """Validate string is valid Python identifier"""
-        if not value:
-            return ValidationResult(valid=False, 
-                                  errors=[f"{field_name} cannot be empty"])
-        
-        # Check Python identifier rules
-        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', value):
-            return ValidationResult(valid=False, 
-                                  errors=[f"{field_name} must be a valid Python identifier"])
-        
-        # Check not a keyword
-        import keyword
-        if keyword.iskeyword(value):
-            return ValidationResult(valid=False, 
-                                  errors=[f"{field_name} cannot be a Python keyword"])
-        
-        return ValidationResult(valid=True)
-        
+    def min_length(value: str, min_len: int, field: str = "value") -> str:
+        """Validate minimum string length"""
+        if len(value) < min_len:
+            raise ValidationError(
+                f"{field} must be at least {min_len} characters",
+                field=field,
+                value=value,
+                details={'min_length': min_len, 'actual_length': len(value)}
+            )
+        return value
+    
     @staticmethod
-    def is_in_range(value: Union[int, float], min_val: Union[int, float], 
-                   max_val: Union[int, float], field_name: str = "value") -> ValidationResult:
-        """Validate number is in range"""
-        if value < min_val or value > max_val:
-            return ValidationResult(valid=False, 
-                                  errors=[f"{field_name} must be between {min_val} and {max_val}"])
-        return ValidationResult(valid=True)
-        
+    def max_length(value: str, max_len: int, field: str = "value") -> str:
+        """Validate maximum string length"""
+        if len(value) > max_len:
+            raise ValidationError(
+                f"{field} must be at most {max_len} characters",
+                field=field,
+                value=value,
+                details={'max_length': max_len, 'actual_length': len(value)}
+            )
+        return value
+    
     @staticmethod
-    def is_positive(value: Union[int, float], field_name: str = "value") -> ValidationResult:
-        """Validate number is positive"""
+    def matches_pattern(value: str, pattern: str, field: str = "value") -> str:
+        """Validate string matches regex pattern"""
+        if not re.match(pattern, value):
+            raise ValidationError(
+                f"{field} does not match required pattern",
+                field=field,
+                value=value,
+                details={'pattern': pattern}
+            )
+        return value
+    
+    @staticmethod
+    def is_alpha(value: str, field: str = "value") -> str:
+        """Validate string contains only letters"""
+        if not value.isalpha():
+            raise ValidationError(
+                f"{field} must contain only letters",
+                field=field,
+                value=value
+            )
+        return value
+    
+    @staticmethod
+    def is_alphanumeric(value: str, field: str = "value") -> str:
+        """Validate string contains only letters and numbers"""
+        if not value.isalnum():
+            raise ValidationError(
+                f"{field} must contain only letters and numbers",
+                field=field,
+                value=value
+            )
+        return value
+    
+    @staticmethod
+    def in_range(value: Union[int, float], min_val: Union[int, float], 
+                 max_val: Union[int, float], field: str = "value") -> Union[int, float]:
+        """Validate numeric value is in range"""
+        if not min_val <= value <= max_val:
+            raise ValidationError(
+                f"{field} must be between {min_val} and {max_val}",
+                field=field,
+                value=value,
+                details={'min': min_val, 'max': max_val}
+            )
+        return value
+    
+    @staticmethod
+    def is_positive(value: Union[int, float], field: str = "value") -> Union[int, float]:
+        """Validate value is positive"""
         if value <= 0:
-            return ValidationResult(valid=False, 
-                                  errors=[f"{field_name} must be positive"])
-        return ValidationResult(valid=True)
-        
+            raise ValidationError(
+                f"{field} must be positive",
+                field=field,
+                value=value
+            )
+        return value
+    
     @staticmethod
-    def is_dict(value: Any, field_name: str = "value") -> ValidationResult:
-        """Validate value is a dictionary"""
-        if not isinstance(value, dict):
-            return ValidationResult(valid=False, 
-                                  errors=[f"{field_name} must be a dictionary"])
-        return ValidationResult(valid=True)
-        
-    @staticmethod
-    def is_list(value: Any, field_name: str = "value") -> ValidationResult:
-        """Validate value is a list"""
-        if not isinstance(value, list):
-            return ValidationResult(valid=False, 
-                                  errors=[f"{field_name} must be a list"])
-        return ValidationResult(valid=True)
-        
-    @staticmethod
-    def has_keys(value: dict, required_keys: List[str], 
-                field_name: str = "dictionary") -> ValidationResult:
-        """Validate dictionary has required keys"""
-        missing_keys = [k for k in required_keys if k not in value]
-        if missing_keys:
-            return ValidationResult(valid=False, 
-                                  errors=[f"{field_name} missing required keys: {missing_keys}"])
-        return ValidationResult(valid=True)
+    def one_of(value: Any, allowed: List[Any], field: str = "value") -> Any:
+        """Validate value is in allowed list"""
+        if value not in allowed:
+            raise ValidationError(
+                f"{field} must be one of {allowed}",
+                field=field,
+                value=value,
+                details={'allowed': allowed}
+            )
+        return value
 
 
-def serialize_state(state: Dict[str, Any]) -> str:
+def generate_id(prefix: str = "", data: Optional[str] = None) -> str:
     """
-    Serialize state to JSON string.
+    Generate deterministic ID
     
     Args:
-        state: State dictionary
+        prefix: Optional prefix
+        data: Data to hash (if None, uses timestamp)
         
     Returns:
-        JSON string representation
+        Unique ID string
     """
-    return json.dumps(state, default=str, sort_keys=True, indent=2)
+    if data is None:
+        data = f"{datetime.utcnow().isoformat()}_{id(object())}"
+    
+    hash_obj = hashlib.sha256(data.encode())
+    hash_hex = hash_obj.hexdigest()[:16]
+    
+    if prefix:
+        return f"{prefix}_{hash_hex}"
+    return hash_hex
 
 
-def deserialize_state(state_str: str) -> Dict[str, Any]:
+def sanitize_filename(filename: str) -> str:
     """
-    Deserialize state from JSON string.
+    Sanitize filename for safe filesystem use
     
     Args:
-        state_str: JSON string
+        filename: Input filename
         
     Returns:
-        State dictionary
+        Sanitized filename
     """
-    return json.loads(state_str)
+    # Remove or replace unsafe characters
+    sanitized = re.sub(r'[^\w\s\-\.]', '_', filename)
+    # Remove leading/trailing spaces and dots
+    sanitized = sanitized.strip('. ')
+    # Collapse multiple underscores
+    sanitized = re.sub(r'_+', '_', sanitized)
+    return sanitized
 
 
-def timestamp() -> str:
+def truncate_string(text: str, max_length: int, suffix: str = "...") -> str:
     """
-    Get current timestamp in ISO format.
-    
-    Returns:
-        ISO formatted timestamp string
-    """
-    return datetime.utcnow().isoformat() + 'Z'
-
-
-def version_state(state: Dict[str, Any], version: str = "1.0") -> Dict[str, Any]:
-    """
-    Add version and timestamp to state.
+    Truncate string to max length
     
     Args:
-        state: State dictionary
-        version: Version string
+        text: Input text
+        max_length: Maximum length
+        suffix: Suffix to add if truncated
         
     Returns:
-        Versioned state dictionary
+        Truncated string
     """
-    return {
-        '_version': version,
-        '_timestamp': timestamp(),
-        'data': state
-    }
+    if len(text) <= max_length:
+        return text
+    return text[:max_length - len(suffix)] + suffix
 
 
-def safe_dict_get(d: dict, key: str, default: Any = None) -> Any:
+def deep_merge(base: Dict, override: Dict) -> Dict:
     """
-    Safely get value from dictionary with default.
-    
-    Args:
-        d: Dictionary
-        key: Key to get
-        default: Default value if key not found
-        
-    Returns:
-        Value or default
-    """
-    return d.get(key, default)
-
-
-def merge_dicts(*dicts: dict) -> dict:
-    """
-    Merge multiple dictionaries.
-    
-    Later dictionaries override earlier ones.
-    
-    Args:
-        *dicts: Dictionaries to merge
-        
-    Returns:
-        Merged dictionary
-    """
-    result = {}
-    for d in dicts:
-        result.update(d)
-    return result
-
-
-def deep_merge_dicts(base: dict, override: dict) -> dict:
-    """
-    Deep merge two dictionaries.
-    
-    Recursively merges nested dictionaries.
+    Deep merge two dictionaries
     
     Args:
         base: Base dictionary
-        override: Override dictionary
+        override: Dictionary to merge in
         
     Returns:
         Merged dictionary
@@ -327,135 +290,76 @@ def deep_merge_dicts(base: dict, override: dict) -> dict:
     
     for key, value in override.items():
         if key in result and isinstance(result[key], dict) and isinstance(value, dict):
-            result[key] = deep_merge_dicts(result[key], value)
+            result[key] = deep_merge(result[key], value)
         else:
             result[key] = value
-            
+    
     return result
 
 
-def clamp(value: Union[int, float], min_val: Union[int, float], 
-         max_val: Union[int, float]) -> Union[int, float]:
+def format_timestamp(dt: Optional[datetime] = None, format_str: str = "%Y-%m-%d %H:%M:%S") -> str:
     """
-    Clamp value to range.
+    Format timestamp in deterministic way
     
     Args:
-        value: Value to clamp
+        dt: Datetime to format (default: now)
+        format_str: Format string
+        
+    Returns:
+        Formatted timestamp
+    """
+    if dt is None:
+        dt = datetime.utcnow()
+    return dt.strftime(format_str)
+
+
+def ensure_list(value: Any) -> List:
+    """
+    Ensure value is a list
+    
+    Args:
+        value: Input value
+        
+    Returns:
+        List containing value(s)
+    """
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    return [value]
+
+
+def safe_divide(numerator: Union[int, float], denominator: Union[int, float], 
+                default: Union[int, float] = 0) -> Union[int, float]:
+    """
+    Safe division that returns default on division by zero
+    
+    Args:
+        numerator: Numerator
+        denominator: Denominator
+        default: Default value if denominator is zero
+        
+    Returns:
+        Division result or default
+    """
+    try:
+        return numerator / denominator if denominator != 0 else default
+    except (ZeroDivisionError, TypeError):
+        return default
+
+
+def clamp(value: Union[int, float], min_val: Union[int, float], 
+          max_val: Union[int, float]) -> Union[int, float]:
+    """
+    Clamp value between min and max
+    
+    Args:
+        value: Input value
         min_val: Minimum value
         max_val: Maximum value
         
     Returns:
         Clamped value
     """
-    return max(min_val, min(max_val, value))
-
-
-def format_bytes(bytes_value: int) -> str:
-    """
-    Format bytes to human-readable string.
-    
-    Args:
-        bytes_value: Number of bytes
-        
-    Returns:
-        Formatted string (e.g., "1.5 MB")
-    """
-    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
-        if bytes_value < 1024.0:
-            return f"{bytes_value:.1f} {unit}"
-        bytes_value /= 1024.0
-    return f"{bytes_value:.1f} PB"
-
-
-def truncate_string(s: str, max_length: int, suffix: str = "...") -> str:
-    """
-    Truncate string to maximum length.
-    
-    Args:
-        s: String to truncate
-        max_length: Maximum length
-        suffix: Suffix to append if truncated
-        
-    Returns:
-        Truncated string
-    """
-    if len(s) <= max_length:
-        return s
-    return s[:max_length - len(suffix)] + suffix
-
-
-def ensure_list(value: Union[Any, List[Any]]) -> List[Any]:
-    """
-    Ensure value is a list.
-    
-    Args:
-        value: Value to convert
-        
-    Returns:
-        List containing value, or value if already a list
-    """
-    if isinstance(value, list):
-        return value
-    return [value]
-
-
-def parse_key_value_pairs(text: str, separator: str = "=") -> Dict[str, str]:
-    """
-    Parse key=value pairs from text.
-    
-    Args:
-        text: Text containing key=value pairs
-        separator: Separator character
-        
-    Returns:
-        Dictionary of key-value pairs
-    """
-    result = {}
-    for line in text.strip().split('\n'):
-        line = line.strip()
-        if not line or line.startswith('#'):
-            continue
-        if separator in line:
-            key, value = line.split(separator, 1)
-            result[key.strip()] = value.strip()
-    return result
-
-
-class StateTransition:
-    """
-    State transition descriptor for logging.
-    """
-    
-    def __init__(self, subsystem: str, from_state: str, to_state: str,
-                 reason: Optional[str] = None, data: Optional[Dict] = None):
-        """
-        Initialize state transition.
-        
-        Args:
-            subsystem: Subsystem name
-            from_state: Previous state
-            to_state: New state
-            reason: Transition reason
-            data: Additional data
-        """
-        self.subsystem = subsystem
-        self.from_state = from_state
-        self.to_state = to_state
-        self.reason = reason
-        self.data = data or {}
-        self.timestamp = timestamp()
-        
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary"""
-        return {
-            'subsystem': self.subsystem,
-            'from_state': self.from_state,
-            'to_state': self.to_state,
-            'reason': self.reason,
-            'data': self.data,
-            'timestamp': self.timestamp
-        }
-        
-    def __repr__(self) -> str:
-        """String representation"""
-        return f"StateTransition({self.subsystem}: {self.from_state} -> {self.to_state})"
+    return max(min_val, min(value, max_val))
