@@ -23,6 +23,9 @@ jobs:
     - name: Display Python version
       run: python -c "import sys; print(sys.version)"
       
+    - name: Install test dependencies
+      run: pip install pytest
+      
     - name: Run unit tests
       run: |
         cd tests/unit

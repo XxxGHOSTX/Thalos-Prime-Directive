@@ -1,5 +1,5 @@
-# Thalos Prime v1.0 - Docker Container
-# Multi-stage build for optimized image size
+# Thalos Prime v3.0 - Docker Container (Web Deployment)
+# Multi-stage build for optimized web deployment
 
 # Build stage
 FROM python:3.12-slim as builder
@@ -26,8 +26,8 @@ RUN python -m py_compile src/**/*.py && \
 FROM python:3.12-slim
 
 LABEL maintainer="Thalos Prime Team"
-LABEL version="1.0"
-LABEL description="Thalos Prime - Deterministic System Framework"
+LABEL version="3.0"
+LABEL description="Thalos Prime - Synthetic Biological Intelligence System (Web Deployment)"
 
 WORKDIR /app
 
@@ -48,12 +48,12 @@ ENV PATH=/root/.local/bin:$PATH
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD python -c "import sys; sys.path.insert(0, '/app/src'); from core.cis import CIS; cis = CIS(); cis.boot(); status = cis.status(); sys.exit(0 if status['status'] == 'operational' else 1)"
+  CMD curl -f http://localhost:8000/api/status || exit 1
 
-# Default command
-CMD ["python", "src/main.py", "--help"]
+# Default command - Start web interface
+CMD ["python", "-u", "/app/src/interfaces/web/immersive_server.py"]
 
-# Expose potential API port (for future web interface)
+# Expose web interface port
 EXPOSE 8000
 
 # Volume for persistence (optional)
