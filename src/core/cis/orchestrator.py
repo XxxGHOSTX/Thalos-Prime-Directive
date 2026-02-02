@@ -19,6 +19,7 @@ Complete orchestration of all subsystems with:
 from typing import Dict, List, Set, Optional, Any
 from enum import Enum
 from datetime import datetime
+from abc import ABC, abstractmethod
 from ..exceptions import (
     LifecycleError, StateError, DependencyError, 
     ReconciliationError, CheckpointError
@@ -41,44 +42,52 @@ class LifecycleState(Enum):
     FAILED = "failed"
 
 
-class SubsystemProtocol:
+class SubsystemProtocol(ABC):
     """
     Protocol that all subsystems must implement
     
     Required methods for complete lifecycle management
     """
     
+    @abstractmethod
     def initialize(self) -> bool:
         """Allocate resources, verify preconditions"""
-        raise NotImplementedError
+        pass
     
+    @abstractmethod
     def validate(self) -> bool:
         """Resolve discrepancies, block startup if unresolved"""
-        raise NotImplementedError
+        pass
     
+    @abstractmethod
     def operate(self) -> bool:
         """Perform declared function only"""
-        raise NotImplementedError
+        pass
     
+    @abstractmethod
     def reconcile(self) -> bool:
         """Correct internal inconsistency"""
-        raise NotImplementedError
+        pass
     
+    @abstractmethod
     def checkpoint(self) -> Dict[str, Any]:
         """Persist full deterministic state"""
-        raise NotImplementedError
+        pass
     
+    @abstractmethod
     def terminate(self) -> bool:
         """Leave system restartable and coherent"""
-        raise NotImplementedError
+        pass
     
+    @abstractmethod
     def get_state(self) -> Dict[str, Any]:
         """Get current observable state"""
-        raise NotImplementedError
+        pass
     
+    @abstractmethod
     def get_health(self) -> Dict[str, Any]:
         """Get health metrics"""
-        raise NotImplementedError
+        pass
 
 
 class SystemOrchestrator:

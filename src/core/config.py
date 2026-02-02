@@ -40,6 +40,9 @@ class Config:
         self._loaded = False
         self._config_file = None
         
+        # Set default values
+        self._set_defaults()
+        
         if config_file:
             self.load(config_file)
         else:
@@ -53,6 +56,29 @@ class Config:
                 if path.exists():
                     self.load(path)
                     break
+    
+    def _set_defaults(self) -> None:
+        """Set default configuration values"""
+        # System defaults
+        if not self.config.has_section('system'):
+            self.config.add_section('system')
+        self.config.set('system', 'version', '1.0')
+        self.config.set('system', 'name', 'ThalosPrime')
+        
+        # CIS defaults
+        if not self.config.has_section('cis'):
+            self.config.add_section('cis')
+        self.config.set('cis', 'enabled', 'true')
+        
+        # CodeGen defaults
+        if not self.config.has_section('codegen'):
+            self.config.add_section('codegen')
+        self.config.set('codegen', 'deterministic', 'true')
+        
+        # Memory defaults
+        if not self.config.has_section('memory'):
+            self.config.add_section('memory')
+        self.config.set('memory', 'storage_type', 'memory')
     
     def load(self, config_file: Union[str, Path]) -> None:
         """
@@ -174,6 +200,31 @@ class Config:
         """Get list of all sections"""
         return self.config.sections()
     
+    def set(self, section: str, key: str, value: str) -> None:
+        """
+        Set configuration value
+        
+        Args:
+            section: Configuration section
+            key: Configuration key
+            value: Value to set
+        """
+        if not self.config.has_section(section):
+            self.config.add_section(section)
+        self.config.set(section, key, str(value))
+    
+    def get_bool(self, section: str, key: str, default: bool = False) -> bool:
+        """Get boolean configuration value"""
+        return self.get(section, key, default=default, value_type=bool)
+    
+    def get_int(self, section: str, key: str, default: int = 0) -> int:
+        """Get integer configuration value"""
+        return self.get(section, key, default=default, value_type=int)
+    
+    def get_float(self, section: str, key: str, default: float = 0.0) -> float:
+        """Get float configuration value"""
+        return self.get(section, key, default=default, value_type=float)
+    
     def validate_required(self, requirements: Dict[str, List[str]]) -> None:
         """
         Validate that required configuration values exist
@@ -245,3 +296,7 @@ def load_config(config_file: Union[str, Path]) -> Config:
     global _global_config
     _global_config = Config(config_file)
     return _global_config
+
+
+# Alias for backwards compatibility
+ThalosConfig = Config
