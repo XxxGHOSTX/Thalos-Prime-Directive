@@ -14,9 +14,61 @@ Thalos Prime™ is a proprietary system.
 
 """
 Thalos Prime v1.0 - Core Systems Module
+
+Core components:
+- CIS: Central Intelligence System (orchestrator)
+- MemoryModule: In-memory key-value storage
+- ThalosConfig: Configuration management
+- ThalosLogger: Logging utilities
+- Exceptions: Custom exception classes
 """
 
 from .cis import CIS
 from .memory import MemoryModule
+from .config import ThalosConfig, load_config
+from .logging import ThalosLogger, get_logger
+from .exceptions import (
+    ThalosError,
+    CISError,
+    CISNotBootedError,
+    CISAlreadyBootedError,
+    SubsystemError,
+    MemoryError,
+    KeyExistsError,
+    KeyNotFoundError,
+    CodeGenError,
+    TemplateNotFoundError,
+    TemplateExistsError,
+    GenerationError,
+    InterfaceError,
+    CLIError,
+    APIError,
+    ValidationError,
+    ConfigurationError
+)
 
-__all__ = ['CIS', 'MemoryModule']
+__all__ = [
+    'CIS',
+    'MemoryModule',
+    'ThalosConfig',
+    'load_config',
+    'ThalosLogger',
+    'get_logger',
+    'ThalosError',
+    'CISError',
+    'CISNotBootedError',
+    'CISAlreadyBootedError',
+    'SubsystemError',
+    'MemoryError',
+    'KeyExistsError',
+    'KeyNotFoundError',
+    'CodeGenError',
+    'TemplateNotFoundError',
+    'TemplateExistsError',
+    'GenerationError',
+    'InterfaceError',
+    'CLIError',
+    'APIError',
+    'ValidationError',
+    'ConfigurationError'
+]
