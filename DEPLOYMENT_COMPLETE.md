@@ -116,8 +116,10 @@ ThalosPrime-v1/
 ├── auto_deploy.bat          # Auto-deployment (Windows)
 ├── auto_deploy.py           # Auto-deployment (Python)
 ├── thalos_prime.py          # Main system launcher
-├── test_system.py           # System tests
-├── test_integration.py      # Integration tests
+├── test_system.py           # Quick system health check
+├── tests/                   # Organized test suite
+│   ├── integration/         # Integration tests
+│   └── unit/                # Unit tests
 ├── requirements.txt         # Python dependencies
 ├── README.md                # Complete documentation
 ├── README_V2.md             # Detailed v3.0 docs
@@ -211,8 +213,8 @@ python thalos_prime.py cli status
 python thalos_prime.py status
 
 # Run tests
-python test_system.py
-python test_integration.py
+python test_system.py         # Quick health check
+python -m pytest tests/       # Full test suite
 ```
 
 ---
@@ -349,8 +351,8 @@ THALOS_STORAGE_PATH=/path/to/backup/storage.json
 ### Troubleshooting
 Run diagnostics:
 ```bash
-python test_system.py
-python test_integration.py
+python test_system.py         # Quick health check
+python -m pytest tests/       # Full test suite
 ```
 
 Check logs in console output for error messages.

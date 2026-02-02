@@ -378,21 +378,19 @@ print("-" * 70)
 
 def check_test_files():
     """Verify all test files exist"""
-    tests = ['test_system.py', 'test_integration.py', 'test_chatbot.py']
+    tests = ['test_system.py', 'tests/integration/', 'tests/unit/']
     return all(os.path.exists(t) for t in tests)
 
 def check_test_executability():
-    """Verify tests can be imported"""
+    """Verify test_system.py can be imported"""
     try:
         import test_system
-        import test_integration
-        import test_chatbot
         return True
     except:
         return False
 
-validate_requirement("Test files (system, integration, chatbot)", check_test_files)
-validate_requirement("Tests are executable", check_test_executability)
+validate_requirement("Test files (system, integration, unit)", check_test_files)
+validate_requirement("System test is executable", check_test_executability)
 
 print("\n9. VALIDATING AI/ML CAPABILITIES")
 print("-" * 70)

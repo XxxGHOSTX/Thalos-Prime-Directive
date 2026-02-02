@@ -237,24 +237,16 @@ Thalos Prime v1.5 is now a complete, fully integrated, synthetic biological inte
    - Database
    - Interfaces
 
-2. **test_integration.py** - Integration Tests (5 tests)
-   - Wetware Integration Pipeline
-   - Database Integration
-   - Neural-Wetware Integration
-   - RL Integration
-   - Complete Pipeline
+2. **tests/integration/** - Integration Tests (42 tests)
+   - **test_wetware.py** - Wetware/DB/AI pipeline tests (5 tests)
+   - **test_chatbot.py** - NLP/action handler tests (11 tests)
+   - **test_lifecycle.py** - CIS lifecycle tests (14 tests)
+   - **test_system.py** - System integration tests (12 tests)
 
-3. **test_chatbot.py** - Chatbot Tests (10 tests)
-   - Greeting Recognition
-   - Question Answering
-   - Action Execution
-   - Mathematical Calculations
-   - Code Generation
-   - Knowledge Base Queries
-   - Memory Operations (CRUD)
-   - Wetware Processing
-   - Complex Multi-step Queries
-   - Learning and Adaptation
+3. **tests/unit/** - Unit Tests (component-specific)
+   - test_cis.py, test_memory.py, test_codegen.py
+   - test_cli.py, test_api.py, test_ai_modules.py
+   - test_utils.py, test_core_utils.py
 
 4. **validate_build.py** - Build Validation (29 checks)
    - Core requirements
