@@ -1,125 +1,106 @@
-# Thalos Prime v1.0 - Makefile
-#
-# © 2026 Tony Ray Macier III. All rights reserved.
-#
-# Common development tasks
+# Thalos Prime - Makefile
+# Development automation tasks
 
-.PHONY: help install test lint clean run docker-build docker-run
-
-PYTHON := python3
-SRC_DIR := src
-TEST_DIR := tests
+.PHONY: help install install-dev test test-unit test-integration coverage lint format type-check clean docker-build docker-run
 
 help:
-	@echo "Thalos Prime v1.0 - Development Commands"
+	@echo "Thalos Prime - Development Commands"
 	@echo ""
-	@echo "Usage: make [target]"
+	@echo "Setup:"
+	@echo "  make install        - Install production dependencies"
+	@echo "  make install-dev    - Install development dependencies"
 	@echo ""
-	@echo "Targets:"
-	@echo "  help          Show this help message"
-	@echo "  install       Install dependencies"
-	@echo "  install-dev   Install development dependencies"
-	@echo "  test          Run all tests"
-	@echo "  test-unit     Run unit tests only"
-	@echo "  test-int      Run integration tests only"
-	@echo "  lint          Run linting checks"
-	@echo "  format        Format code with black"
-	@echo "  typecheck     Run type checking with mypy"
-	@echo "  clean         Clean build artifacts"
-	@echo "  run           Run the main application"
-	@echo "  status        Get system status"
-	@echo "  docker-build  Build Docker image"
-	@echo "  docker-run    Run Docker container"
-	@echo "  docker-compose Start with docker-compose"
+	@echo "Testing:"
+	@echo "  make test           - Run all tests"
+	@echo "  make test-unit      - Run unit tests only"
+	@echo "  make test-integration - Run integration tests only"
+	@echo "  make coverage       - Run tests with coverage report"
+	@echo ""
+	@echo "Code Quality:"
+	@echo "  make lint           - Run linters (flake8, pylint)"
+	@echo "  make format         - Format code (black, isort)"
+	@echo "  make type-check     - Run type checker (mypy)"
+	@echo "  make check-all      - Run all quality checks"
+	@echo ""
+	@echo "Docker:"
+	@echo "  make docker-build   - Build Docker image"
+	@echo "  make docker-run     - Run Docker container"
+	@echo ""
+	@echo "Cleanup:"
+	@echo "  make clean          - Remove build artifacts and caches"
 
 install:
 	pip install -r requirements.txt
 
 install-dev:
+	pip install -r requirements.txt
 	pip install -r requirements-dev.txt
 
-test: test-unit test-int
-	@echo "All tests completed!"
+test:
+	pytest tests/ -v
 
 test-unit:
-	@echo "Running unit tests..."
-	@for test in $(TEST_DIR)/unit/*.py; do \
-		if [ "$$(basename $$test)" != "__init__.py" ]; then \
-			echo "Running $$test"; \
-			$(PYTHON) $$test || exit 1; \
-		fi \
-	done
-	@echo "Unit tests completed!"
+	pytest tests/unit/ -v -m unit
 
-test-int:
-	@echo "Running integration tests..."
-	$(PYTHON) $(TEST_DIR)/integration/test_system.py
-	@echo "Integration tests completed!"
+test-integration:
+	pytest tests/integration/ -v -m integration
 
-test-pytest:
-	pytest $(TEST_DIR) -v
+coverage:
+	pytest tests/ --cov=src --cov-report=html --cov-report=term-missing
 
 lint:
-	@echo "Running linting checks..."
-	$(PYTHON) -m py_compile $(SRC_DIR)/**/*.py
-	$(PYTHON) -m py_compile $(TEST_DIR)/**/*.py
-	@echo "Linting completed!"
+	@echo "Running flake8..."
+	flake8 src/ tests/ --max-line-length=100 --extend-ignore=E203,W503
+	@echo "Running pylint..."
+	pylint src/ --max-line-length=100 --disable=C0103,C0114,C0115,C0116,R0903,R0913
 
 format:
-	black $(SRC_DIR) $(TEST_DIR)
-	isort $(SRC_DIR) $(TEST_DIR)
+	@echo "Running black..."
+	black src/ tests/ --line-length=100
+	@echo "Running isort..."
+	isort src/ tests/ --profile black --line-length=100
 
-typecheck:
-	mypy $(SRC_DIR)
+type-check:
+	mypy src/ --ignore-missing-imports
+
+check-all: lint type-check test
+	@echo "All checks passed!"
 
 clean:
 	@echo "Cleaning build artifacts..."
-	rm -rf __pycache__
-	rm -rf $(SRC_DIR)/__pycache__
-	rm -rf $(SRC_DIR)/**/__pycache__
-	rm -rf $(TEST_DIR)/__pycache__
-	rm -rf $(TEST_DIR)/**/__pycache__
-	rm -rf .pytest_cache
-	rm -rf .coverage
-	rm -rf htmlcov
+	rm -rf build/
+	rm -rf dist/
 	rm -rf *.egg-info
-	rm -rf build
-	rm -rf dist
-	@echo "Clean completed!"
-
-run:
-	$(PYTHON) $(SRC_DIR)/main.py
-
-status:
-	$(PYTHON) $(SRC_DIR)/main.py status
-
-boot:
-	$(PYTHON) $(SRC_DIR)/main.py boot
-
-memory-list:
-	$(PYTHON) $(SRC_DIR)/main.py memory list
+	rm -rf .pytest_cache/
+	rm -rf .mypy_cache/
+	rm -rf .coverage
+	rm -rf htmlcov/
+	rm -rf .tox/
+	find . -type d -name __pycache__ -exec rm -rf {} +
+	find . -type f -name "*.pyc" -delete
+	find . -type f -name "*.pyo" -delete
+	find . -type f -name "*.pyd" -delete
+	@echo "Cleanup complete!"
 
 docker-build:
-	docker build -t thalos-prime:1.0 .
+	docker build -t thalos-prime:latest .
 
 docker-run:
-	docker run --rm thalos-prime:1.0 python src/main.py status
+	docker run -p 8000:8000 thalos-prime:latest
 
-docker-compose:
-	docker-compose up -d
+# Development server
+dev-web:
+	python src/interfaces/web/web_server.py
 
-docker-down:
-	docker-compose down
+dev-cli:
+	python src/main.py
 
-# Development workflow
-dev: install-dev lint test
-	@echo "Development check completed!"
+# Database setup (if needed)
+db-init:
+	@echo "Initializing database..."
+	mkdir -p data
+	@echo "Database directory created"
 
-# CI/CD simulation
-ci: lint test
-	@echo "CI check completed!"
-
-# Bootstrap
-bootstrap:
-	chmod +x create_thalos_bootstrap.sh
-	./create_thalos_bootstrap.sh
+# Quick validation
+validate: format lint type-check test
+	@echo "Validation complete - all checks passed!"

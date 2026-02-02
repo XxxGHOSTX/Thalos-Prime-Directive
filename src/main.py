@@ -40,15 +40,9 @@ def main():
     
     Establishes the control hierarchy:
     1. Create CIS (Central Intelligence System) - primary authority
-    2. Boot CIS - initializes all core subsystems (Memory, CodeGen) and creates
-       the primary CLI/API interface instances used by the running system
-    3. Retrieve interface layers from CIS for user interaction
-    4. Execute CLI commands with delegation to CIS subsystems
-    
-    Note:
-        While CIS owns the primary CLI and API instances during normal boot,
-        the CLI and API classes can also be instantiated independently
-        (for example, in tests or tools) with an optional CIS reference.
+    2. Boot CIS - initializes all subsystems including CLI and API
+    3. Use CIS-owned interface instances (no duplicate creation)
+    4. Run CLI in interactive mode
     """
     print("=== Thalos Prime v1.0 ===")
     print("Deterministic System Framework")
@@ -59,6 +53,7 @@ def main():
     cis = CIS()
     
     # Boot system - CIS orchestrates all subsystem initialization
+    # This creates the CLI and API instances internally
     print("Booting system...")
     if cis.boot():
         print("✓ System booted successfully")
@@ -70,14 +65,21 @@ def main():
         return 1
     
     print()
-    print("Retrieving interfaces...")
+    print("Interfaces ready...")
     
-    # Get interface layers from CIS (CIS owns all subsystems)
+    # Get CIS-owned interface instances (DO NOT create new ones)
     cli = cis.get_cli()
-    cis.get_api()
+    api = cis.get_api()
     
-    print("✓ CLI retrieved (thin delegation layer)")
-    print("✓ API retrieved (stateless REST interface)")
+    if cli is None:
+        print("✗ CLI not initialized by CIS")
+        return 1
+    if api is None:
+        print("✗ API not initialized by CIS")
+        return 1
+    
+    print("✓ CLI ready (CIS-owned delegation layer)")
+    print("✓ API ready (CIS-owned stateless REST interface)")
     print()
     
     # Run CLI

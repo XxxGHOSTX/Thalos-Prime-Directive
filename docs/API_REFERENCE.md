@@ -1,733 +1,810 @@
-# Thalos Prime v1.0 - API Reference
+# Thalos Prime - API Reference
+
+**Version:** 1.0.0  
+**Copyright © 2026 Tony Ray Macier III. All rights reserved.**
 
 ---
-
-**© 2026 Tony Ray Macier III. All rights reserved.**
-
-This document is part of Thalos Prime, an original proprietary software system. Unauthorized reproduction, modification, distribution, or use is strictly prohibited without express written permission.
-
-**Thalos Prime™ is a proprietary system.**
-
----
-
-## Overview
-
-This document provides a complete API reference for Thalos Prime v1.0, covering both the programmatic Python API and the REST HTTP interface.
 
 ## Table of Contents
 
-1. [Python API](#python-api)
-   - [CIS (Central Intelligence System)](#cis-central-intelligence-system)
-   - [Memory Module](#memory-module)
-   - [Code Generator](#code-generator)
-   - [CLI Interface](#cli-interface)
-   - [API Interface](#api-interface)
-2. [REST API](#rest-api)
-   - [System Endpoints](#system-endpoints)
-   - [Memory Endpoints](#memory-endpoints)
-   - [CodeGen Endpoints](#codegen-endpoints)
-3. [CLI Commands](#cli-commands)
+1. [Core System API](#core-system-api)
+2. [Memory API](#memory-api)
+3. [Code Generation API](#code-generation-api)
+4. [CLI API](#cli-api)
+5. [REST API](#rest-api)
+6. [Configuration API](#configuration-api)
+7. [Logging API](#logging-api)
+8. [Utilities API](#utilities-api)
 
 ---
 
-## Python API
+## Core System API
 
 ### CIS (Central Intelligence System)
 
-The Central Intelligence System is the primary orchestrator for Thalos Prime.
-
-#### Import
-
-```python
-from core.cis import CIS
-```
+The primary system orchestrator. All subsystems are owned and managed by CIS.
 
 #### Class: `CIS`
 
-##### Constructor
+**Location:** `src/core/cis/controller.py`
+
+**Lifecycle Methods (Required):**
 
 ```python
-CIS()
+def __init__() -> None
+    """Initialize CIS control unit"""
+
+def initialize() -> bool
+    """
+    Initialize CIS - allocate resources, verify preconditions
+    Returns: True if successful
+    """
+
+def validate() -> bool
+    """
+    Validate configuration and dependencies
+    Blocks startup if invalid
+    Returns: True if valid
+    """
+
+def boot() -> bool
+    """
+    Boot system - initialize all subsystems
+    Returns: True if successful
+    """
+
+def operate() -> Dict[str, Any]
+    """
+    Perform operations - return current status
+    Returns: Operational status dictionary
+    """
+
+def reconcile() -> bool
+    """
+    Reconcile internal state - fix inconsistencies
+    Returns: True if successful
+    """
+
+def checkpoint() -> Dict[str, Any]
+    """
+    Checkpoint state - persist for recovery
+    Returns: Serialized state dictionary
+    """
+
+def terminate() -> bool
+    """
+    Terminate cleanly - leave system restartable
+    Returns: True if successful
+    """
 ```
 
-Creates a new CIS instance. The system is created but not booted.
-
-##### Methods
-
-###### `boot() -> bool`
-
-Boot the system, initializing all subsystems.
-
-**Returns**: `True` if boot successful, `False` if already booted.
+**Subsystem Access Methods:**
 
 ```python
+def get_memory() -> Optional[MemoryModule]
+    """Get CIS-owned memory subsystem"""
+
+def get_codegen() -> Optional[CodeGenerator]
+    """Get CIS-owned codegen subsystem"""
+
+def get_cli() -> Optional[CLI]
+    """Get CIS-owned CLI interface"""
+
+def get_api() -> Optional[API]
+    """Get CIS-owned REST API interface"""
+```
+
+**State Query Methods:**
+
+```python
+def status() -> Dict[str, Any]
+    """
+    Get system status
+    
+    Returns:
+        {
+            'version': str,
+            'status': str,  # 'created', 'operational', 'error'
+            'booted': bool,
+            'subsystems': {
+                'memory': bool,
+                'codegen': bool,
+                'cli': bool,
+                'api': bool
+            }
+        }
+    """
+
+def shutdown() -> bool
+    """
+    Shutdown system cleanly
+    Returns: True if successful
+    """
+```
+
+**Example Usage:**
+
+```python
+from src.core.cis import CIS
+
+# Create and boot
 cis = CIS()
-result = cis.boot()  # True
-```
-
-###### `shutdown() -> bool`
-
-Shutdown the system, clearing all subsystems.
-
-**Returns**: `True` if shutdown successful, `False` if not booted.
-
-```python
-cis.shutdown()  # True
-```
-
-###### `status() -> Dict[str, Any]`
-
-Get current system status.
-
-**Returns**: Dictionary with version, status, booted flag, and subsystems.
-
-```python
-status = cis.status()
-# {
-#     'version': '1.0',
-#     'status': 'operational',
-#     'booted': True,
-#     'subsystems': {
-#         'memory': True,
-#         'codegen': True,
-#         'cli': True,
-#         'api': True
-#     }
-# }
-```
-
-###### `get_memory() -> Optional[MemoryModule]`
-
-Get the Memory subsystem instance.
-
-**Returns**: `MemoryModule` if booted, `None` otherwise.
-
-###### `get_codegen() -> Optional[CodeGenerator]`
-
-Get the CodeGen subsystem instance.
-
-**Returns**: `CodeGenerator` if booted, `None` otherwise.
-
-###### `get_cli() -> Optional[CLI]`
-
-Get the CLI interface instance.
-
-**Returns**: `CLI` if booted, `None` otherwise.
-
-###### `get_api() -> Optional[API]`
-
-Get the API interface instance.
-
-**Returns**: `API` if booted, `None` otherwise.
-
----
-
-### Memory Module
-
-In-memory key-value storage with explicit CRUD operations.
-
-#### Import
-
-```python
-from core.memory import MemoryModule
-```
-
-#### Class: `MemoryModule`
-
-##### Methods
-
-###### `create(key: str, value: Any) -> bool`
-
-Create a new entry in storage.
-
-**Parameters**:
-- `key`: Unique identifier for the data
-- `value`: Data to store
-
-**Returns**: `True` if created, `False` if key already exists.
-
-```python
-memory.create('user:1', {'name': 'John'})  # True
-memory.create('user:1', {'name': 'Jane'})  # False (exists)
-```
-
-###### `read(key: str) -> Optional[Any]`
-
-Read data from storage.
-
-**Parameters**:
-- `key`: Key to read
-
-**Returns**: Stored value or `None` if not found.
-
-```python
-value = memory.read('user:1')  # {'name': 'John'}
-value = memory.read('missing')  # None
-```
-
-###### `update(key: str, value: Any) -> bool`
-
-Update existing data in storage.
-
-**Parameters**:
-- `key`: Key to update
-- `value`: New value
-
-**Returns**: `True` if updated, `False` if key doesn't exist.
-
-```python
-memory.update('user:1', {'name': 'Jane'})  # True
-memory.update('missing', {'name': 'X'})  # False
-```
-
-###### `delete(key: str) -> bool`
-
-Delete data from storage.
-
-**Parameters**:
-- `key`: Key to delete
-
-**Returns**: `True` if deleted, `False` if key doesn't exist.
-
-```python
-memory.delete('user:1')  # True
-memory.delete('missing')  # False
-```
-
-###### `exists(key: str) -> bool`
-
-Check if a key exists.
-
-**Parameters**:
-- `key`: Key to check
-
-**Returns**: `True` if exists, `False` otherwise.
-
-```python
-memory.exists('user:1')  # True
-```
-
-###### `list_keys() -> List[str]`
-
-List all stored keys.
-
-**Returns**: List of all keys in storage.
-
-```python
-keys = memory.list_keys()  # ['user:1', 'user:2', ...]
-```
-
-###### `count() -> int`
-
-Get count of stored items.
-
-**Returns**: Number of items in storage.
-
-```python
-count = memory.count()  # 5
-```
-
-###### `clear() -> None`
-
-Clear all data from storage.
-
-```python
-memory.clear()
+if cis.boot():
+    # Access subsystems
+    memory = cis.get_memory()
+    
+    # Check status
+    status = cis.status()
+    
+    # Checkpoint
+    state = cis.checkpoint()
+    
+    # Cleanup
+    cis.shutdown()
 ```
 
 ---
 
-### Code Generator
+## Memory API
 
-Deterministic code generation engine.
+### MemoryModule
 
-#### Import
+Key-value storage with persistence support.
 
-```python
-from codegen import CodeGenerator
-```
+**Location:** `src/core/memory/storage.py`
 
-#### Class: `CodeGenerator`
-
-##### Constructor
+#### Methods:
 
 ```python
-CodeGenerator(track_history: bool = False)
+def store(key: str, value: Any) -> None
+    """
+    Store value with key
+    
+    Args:
+        key: Storage key
+        value: Value to store
+        
+    Raises:
+        KeyExistsError: If key already exists
+    """
+
+def retrieve(key: str) -> Any
+    """
+    Retrieve value by key
+    
+    Args:
+        key: Storage key
+        
+    Returns:
+        Stored value
+        
+    Raises:
+        KeyNotFoundError: If key not found
+    """
+
+def update(key: str, value: Any) -> None
+    """
+    Update existing key
+    
+    Args:
+        key: Storage key
+        value: New value
+        
+    Raises:
+        KeyNotFoundError: If key not found
+    """
+
+def delete(key: str) -> None
+    """
+    Delete key
+    
+    Args:
+        key: Storage key
+        
+    Raises:
+        KeyNotFoundError: If key not found
+    """
+
+def list_keys() -> List[str]
+    """
+    List all keys
+    
+    Returns:
+        List of key names
+    """
+
+def exists(key: str) -> bool
+    """
+    Check if key exists
+    
+    Args:
+        key: Storage key
+        
+    Returns:
+        True if key exists
+    """
+
+def clear() -> None
+    """Clear all stored data"""
 ```
 
-**Parameters**:
-- `track_history`: Enable generation history tracking
-
-##### Methods
-
-###### `register_template(name: str, content: str) -> bool`
-
-Register a code template.
-
-**Parameters**:
-- `name`: Template name
-- `content`: Template string with `{placeholders}`
-
-**Returns**: `True` if registered, `False` if already exists.
+**Example Usage:**
 
 ```python
-codegen.register_template('class', 'class {name}:\n    pass')  # True
+memory = cis.get_memory()
+
+# Store data
+memory.store("user_name", "Alice")
+memory.store("count", 42)
+
+# Retrieve data
+name = memory.retrieve("user_name")  # "Alice"
+
+# Update
+memory.update("count", 43)
+
+# Check existence
+if memory.exists("user_name"):
+    print("User found")
+
+# List keys
+keys = memory.list_keys()
+
+# Delete
+memory.delete("count")
 ```
-
-###### `generate(template_name: str, context: Dict[str, Any]) -> Optional[str]`
-
-Generate code from a template.
-
-**Parameters**:
-- `template_name`: Name of registered template
-- `context`: Dictionary of placeholder values
-
-**Returns**: Generated code string or `None` if template not found.
-
-```python
-code = codegen.generate('class', {'name': 'User'})
-# 'class User:\n    pass'
-```
-
-###### `generate_class(name: str, methods: List[str] = None) -> str`
-
-Generate a Python class structure.
-
-**Parameters**:
-- `name`: Class name
-- `methods`: List of method names (default: `['__init__']`)
-
-**Returns**: Generated class code.
-
-```python
-code = codegen.generate_class('User', ['save', 'load'])
-# class User:
-#     """Auto-generated User class"""
-#
-#     def __init__(self):
-#         """Initialize User"""
-#         pass
-#
-#     def save(self):
-#         """Auto-generated save method"""
-#         pass
-#
-#     def load(self):
-#         """Auto-generated load method"""
-#         pass
-```
-
-###### `generate_function(name: str, parameters: List[str] = None) -> str`
-
-Generate a Python function structure.
-
-**Parameters**:
-- `name`: Function name
-- `parameters`: List of parameter names
-
-**Returns**: Generated function code.
-
-```python
-code = codegen.generate_function('process', ['data', 'config'])
-# def process(data, config):
-#     """Auto-generated process function"""
-#     pass
-```
-
-###### `list_templates() -> List[str]`
-
-List registered templates (sorted).
-
-**Returns**: Sorted list of template names.
-
-###### `get_history() -> List[Dict]`
-
-Get generation history (if tracking enabled).
-
-**Returns**: List of generation records.
-
-###### `clear_history() -> None`
-
-Clear generation history.
 
 ---
+
+## Code Generation API
+
+### CodeGenerator
+
+Generate Python code from templates.
+
+**Location:** `src/codegen/generator.py`
+
+#### Methods:
+
+```python
+def generate_class(name: str, methods: List[str] = None,
+                   attributes: List[str] = None) -> str
+    """
+    Generate Python class
+    
+    Args:
+        name: Class name
+        methods: List of method names
+        attributes: List of attribute names
+        
+    Returns:
+        Generated Python code
+        
+    Raises:
+        ValidationError: If name is invalid
+    """
+
+def generate_function(name: str, parameters: List[str] = None,
+                     return_type: str = None) -> str
+    """
+    Generate Python function
+    
+    Args:
+        name: Function name
+        parameters: List of parameter names
+        return_type: Return type annotation
+        
+    Returns:
+        Generated Python code
+    """
+
+def clear_history() -> None
+    """Clear generation history"""
+```
+
+**Example Usage:**
+
+```python
+codegen = cis.get_codegen()
+
+# Generate class
+code = codegen.generate_class(
+    name="UserManager",
+    methods=["create", "read", "update", "delete"],
+    attributes=["users", "database"]
+)
+
+# Generate function
+func_code = codegen.generate_function(
+    name="calculate_total",
+    parameters=["items", "tax_rate"],
+    return_type="float"
+)
+```
+
+---
+
+## CLI API
 
 ### CLI Interface
 
-Command-line interface for Thalos Prime.
+Command-line interface for system interaction.
 
-#### Import
+**Location:** `src/interfaces/cli/cli.py`
+
+#### Methods:
 
 ```python
-from interfaces.cli import CLI
+def execute(args: List[str]) -> str
+    """
+    Execute CLI command
+    
+    Args:
+        args: Command arguments
+        
+    Returns:
+        Command output
+    """
 ```
 
-#### Class: `CLI`
+**Available Commands:**
 
-##### Constructor
+```bash
+# System commands
+status                    # Show system status
+boot                      # Boot system
+shutdown                  # Shutdown system
 
-```python
-CLI(cis: Optional[CIS] = None)
+# Memory commands
+memory create <key> <value>   # Create entry
+memory read <key>             # Read entry
+memory update <key> <value>   # Update entry
+memory delete <key>           # Delete entry
+memory list                   # List all keys
+
+# Codegen commands
+codegen class <name> --methods <m1> <m2>
+codegen function <name> --params <p1> <p2>
 ```
 
-**Parameters**:
-- `cis`: CIS instance to delegate to
-
-##### Methods
-
-###### `execute(args: List[str]) -> str`
-
-Execute a CLI command.
-
-**Parameters**:
-- `args`: Command-line arguments
-
-**Returns**: Result message string.
+**Example Usage:**
 
 ```python
-cli = CLI(cis)
+cli = cis.get_cli()
+
+# Execute command
 result = cli.execute(['status'])
-result = cli.execute(['memory', 'create', 'key', 'value'])
-```
+print(result)
 
-###### `set_cis(cis: CIS) -> None`
-
-Set the CIS instance.
-
----
-
-### API Interface
-
-REST API interface for Thalos Prime.
-
-#### Import
-
-```python
-from interfaces.api import API
-```
-
-#### Class: `API`
-
-##### Constructor
-
-```python
-API(cis: Optional[CIS] = None)
-```
-
-##### Methods
-
-###### `handle_request(method: str, path: str, body: Optional[Dict] = None) -> Dict`
-
-Handle an API request.
-
-**Parameters**:
-- `method`: HTTP method (GET, POST, PUT, DELETE)
-- `path`: Request path
-- `body`: Optional request body
-
-**Returns**: Response dictionary with status, code, and data.
-
-```python
-api = API(cis)
-response = api.handle_request('GET', '/status')
-response = api.handle_request('POST', '/memory', {'key': 'k1', 'value': 'v1'})
+result = cli.execute(['memory', 'create', 'key1', 'value1'])
 ```
 
 ---
 
 ## REST API
 
-### Response Format
+### API Endpoints
 
-All API responses follow this format:
+HTTP REST interface for remote access.
 
+**Location:** `src/interfaces/api/server.py`
+
+**Base URL:** `http://localhost:5000`
+
+#### Endpoints:
+
+**Health Check:**
+```http
+GET /health
+```
+Response:
 ```json
-{
-    "status": "success" | "error",
-    "code": 200,
-    "data": { ... } | null,
-    "message": "Error message" (only on error)
-}
+{"status": "healthy", "version": "1.0"}
 ```
 
-### System Endpoints
-
-#### GET /health
-
-Health check endpoint.
-
-**Response**:
+**System Status:**
+```http
+GET /api/status
+```
+Response:
 ```json
 {
-    "status": "success",
-    "code": 200,
-    "data": {
-        "healthy": true,
-        "service": "Thalos Prime",
-        "version": "1.0"
+    "version": "1.0",
+    "status": "operational",
+    "booted": true,
+    "subsystems": {
+        "memory": true,
+        "codegen": true,
+        "cli": true,
+        "api": true
     }
 }
 ```
 
-#### GET /status
+**Memory Operations:**
 
-Get system status.
+Create:
+```http
+POST /api/memory
+Content-Type: application/json
 
-**Response**:
-```json
 {
-    "status": "success",
-    "code": 200,
-    "data": {
-        "version": "1.0",
-        "status": "operational",
-        "booted": true,
-        "subsystems": {
-            "memory": true,
-            "codegen": true,
-            "cli": true,
-            "api": true
-        }
-    }
+    "key": "user_id",
+    "value": "12345"
 }
 ```
 
-#### POST /boot
+Read:
+```http
+GET /api/memory/<key>
+```
 
-Boot the system.
+Update:
+```http
+PUT /api/memory/<key>
+Content-Type: application/json
 
-**Response**:
-```json
 {
-    "status": "success",
-    "code": 200,
-    "data": {
-        "booted": true
-    }
+    "value": "new_value"
 }
 ```
 
-#### POST /shutdown
-
-Shutdown the system.
-
-**Response**:
-```json
-{
-    "status": "success",
-    "code": 200,
-    "data": {
-        "shutdown": true
-    }
-}
+Delete:
+```http
+DELETE /api/memory/<key>
 ```
 
-### Memory Endpoints
-
-#### POST /memory
-
-Create a new memory entry.
-
-**Request Body**:
-```json
-{
-    "key": "mykey",
-    "value": "myvalue"
-}
+List:
+```http
+GET /api/memory
 ```
 
-**Response**:
-```json
-{
-    "status": "success",
-    "code": 200,
-    "data": {
-        "created": true
-    }
-}
-```
+**Code Generation:**
 
-#### GET /memory/{key}
+Generate Class:
+```http
+POST /api/codegen/class
+Content-Type: application/json
 
-Read a memory entry.
-
-**Response**:
-```json
-{
-    "status": "success",
-    "code": 200,
-    "data": {
-        "key": "mykey",
-        "value": "myvalue"
-    }
-}
-```
-
-#### PUT /memory/{key}
-
-Update a memory entry.
-
-**Request Body**:
-```json
-{
-    "value": "newvalue"
-}
-```
-
-**Response**:
-```json
-{
-    "status": "success",
-    "code": 200,
-    "data": {
-        "updated": true
-    }
-}
-```
-
-#### DELETE /memory/{key}
-
-Delete a memory entry.
-
-**Response**:
-```json
-{
-    "status": "success",
-    "code": 200,
-    "data": {
-        "deleted": true
-    }
-}
-```
-
-#### GET /memory
-
-List all memory keys.
-
-**Response**:
-```json
-{
-    "status": "success",
-    "code": 200,
-    "data": {
-        "keys": ["key1", "key2"],
-        "count": 2
-    }
-}
-```
-
-### CodeGen Endpoints
-
-#### POST /codegen/class
-
-Generate a Python class.
-
-**Request Body**:
-```json
 {
     "name": "MyClass",
-    "methods": ["process", "validate"]
+    "methods": ["method1", "method2"],
+    "attributes": ["attr1"]
 }
 ```
 
-**Response**:
-```json
+Generate Function:
+```http
+POST /api/codegen/function
+Content-Type: application/json
+
 {
-    "status": "success",
-    "code": 200,
-    "data": {
-        "code": "class MyClass:\n    ..."
-    }
-}
-```
-
-#### POST /codegen/function
-
-Generate a Python function.
-
-**Request Body**:
-```json
-{
-    "name": "process_data",
-    "parameters": ["input", "config"]
-}
-```
-
-**Response**:
-```json
-{
-    "status": "success",
-    "code": 200,
-    "data": {
-        "code": "def process_data(input, config):\n    ..."
-    }
+    "name": "my_function",
+    "parameters": ["param1", "param2"],
+    "return_type": "str"
 }
 ```
 
 ---
 
-## CLI Commands
+## Configuration API
 
-### System Commands
+### ConfigManager
 
-```bash
-# Boot the system
-python src/main.py boot
+Configuration management with INI file support.
 
-# Shutdown the system
-python src/main.py shutdown
+**Location:** `src/core/config.py`
 
-# Get system status
-python src/main.py status
+#### Methods:
+
+```python
+def get(section: str, key: str, default: Any = None,
+        type_cast: type = str) -> Any
+    """
+    Get configuration value
+    
+    Precedence: ENV > File > Defaults > Parameter
+    
+    Args:
+        section: Config section
+        key: Config key
+        default: Default value
+        type_cast: Type to cast to (str, int, float, bool)
+        
+    Returns:
+        Configuration value
+    """
+
+def get_section(section: str) -> Dict[str, Any]
+    """Get all values in section"""
+
+def set(section: str, key: str, value: Any) -> None
+    """Set configuration value"""
+
+def save(config_path: Optional[str] = None) -> None
+    """Save configuration to file"""
+
+def validate() -> bool
+    """
+    Validate configuration
+    
+    Returns:
+        True if valid
+        
+    Raises:
+        ValidationError: If invalid
+    """
 ```
 
-### Memory Commands
+**Example Usage:**
 
-```bash
-# Create entry
-python src/main.py memory create <key> <value>
+```python
+from src.core.config import get_config, initialize_config
 
-# Read entry
-python src/main.py memory read <key>
+# Get global config
+config = get_config()
 
-# Update entry
-python src/main.py memory update <key> <value>
+# Get values
+debug = config.get('system', 'debug', default=False, type_cast=bool)
+log_level = config.get('system', 'log_level', default='INFO')
 
-# Delete entry
-python src/main.py memory delete <key>
+# Get section
+memory_config = config.get_section('memory')
 
-# List all keys
-python src/main.py memory list
-
-# Get count
-python src/main.py memory count
-```
-
-### CodeGen Commands
-
-```bash
-# Generate class
-python src/main.py codegen class <ClassName> [--methods method1 method2]
-
-# Generate function
-python src/main.py codegen function <function_name> [--params param1 param2]
+# Initialize with custom file
+config = initialize_config('./my_config.ini')
 ```
 
 ---
 
-## Error Codes
+## Logging API
 
-| Code | Description |
-|------|-------------|
-| 200 | Success |
-| 400 | Bad Request (missing parameters) |
-| 404 | Not Found (key/endpoint not found) |
-| 405 | Method Not Allowed |
-| 409 | Conflict (key already exists) |
-| 500 | Internal Server Error (CIS not initialized) |
+### ThalosLogger
+
+Singleton logger with structured logging.
+
+**Location:** `src/core/logging.py`
+
+#### Methods:
+
+```python
+def configure(level: str = 'INFO', log_file: Optional[str] = None,
+             console: bool = True, format_string: Optional[str] = None) -> None
+    """Configure logger settings"""
+
+def debug(message: str, **kwargs) -> None
+    """Log debug message"""
+
+def info(message: str, **kwargs) -> None
+    """Log info message"""
+
+def warning(message: str, **kwargs) -> None
+    """Log warning message"""
+
+def error(message: str, **kwargs) -> None
+    """Log error message"""
+
+def critical(message: str, **kwargs) -> None
+    """Log critical message"""
+
+def exception(message: str, exc_info=True, **kwargs) -> None
+    """Log exception with traceback"""
+
+def log_lifecycle(subsystem: str, event: str, success: bool = True,
+                 details: Optional[dict] = None) -> None
+    """Log lifecycle event"""
+
+def log_state_transition(subsystem: str, from_state: str,
+                        to_state: str, reason: Optional[str] = None) -> None
+    """Log state transition"""
+```
+
+**Example Usage:**
+
+```python
+from src.core.logging import get_logger, configure_logging
+
+# Get logger
+logger = get_logger()
+
+# Configure
+logger.configure(level='DEBUG', log_file='./logs/thalos.log')
+
+# Log messages
+logger.info("System starting")
+logger.debug("Debug information")
+logger.error("An error occurred")
+
+# Log lifecycle
+logger.log_lifecycle('CIS', 'boot', success=True)
+
+# Log state transition
+logger.log_state_transition('CIS', 'created', 'operational', 'Boot complete')
+```
 
 ---
 
-**Version**: 1.0  
-**Last Updated**: 2026-01-16  
-**Status**: Complete
+## Utilities API
+
+### Result Type
+
+Deterministic error handling without exceptions.
+
+**Location:** `src/core/utils.py`
+
+```python
+# Create results
+result = Result.ok(value)
+result = Result.err("error message")
+
+# Check status
+if result.success:
+    value = result.value
+
+# Unwrap
+value = result.unwrap_or(default_value)
+
+# Map
+new_result = result.map(lambda x: x * 2)
+```
+
+### Validators
+
+```python
+from src.core.utils import Validator
+
+# Validate
+result = Validator.is_not_empty("value", "field_name")
+result = Validator.is_valid_identifier("my_var")
+result = Validator.is_in_range(5, 0, 10)
+result = Validator.is_positive(42)
+
+if result.valid:
+    print("Valid")
+else:
+    print(f"Errors: {result.errors}")
+```
+
+### State Management
+
+```python
+from src.core.utils import (
+    serialize_state,
+    deserialize_state,
+    version_state,
+    timestamp
+)
+
+# Serialize
+state = {'key': 'value'}
+json_str = serialize_state(state)
+
+# Deserialize
+state = deserialize_state(json_str)
+
+# Version
+versioned = version_state(state, version="1.0")
+
+# Timestamp
+ts = timestamp()
+```
+
+---
+
+## Exception Hierarchy
+
+**Location:** `src/core/exceptions.py`
+
+```
+ThalosError (base)
+├── CISError
+├── SubsystemError
+│   ├── MemoryError
+│   │   ├── KeyNotFoundError
+│   │   └── KeyExistsError
+│   └── CodeGenError
+├── ValidationError
+├── StateError
+├── ConfigurationError
+├── InitializationError
+├── OperationError
+├── InterfaceError
+├── LifecycleError
+├── ReconciliationError
+└── CheckpointError
+```
+
+**Usage:**
+
+```python
+from src.core.exceptions import (
+    ThalosError,
+    CISError,
+    MemoryError,
+    KeyNotFoundError,
+    ValidationError
+)
+
+try:
+    memory.retrieve("nonexistent")
+except KeyNotFoundError as e:
+    print(f"Key not found: {e}")
+except MemoryError as e:
+    print(f"Memory error: {e}")
+```
+
+---
+
+## Complete Example
+
+```python
+#!/usr/bin/env python3
+"""
+Complete Thalos Prime example showing proper CIS ownership pattern
+"""
+
+from src.core.cis import CIS
+from src.core.logging import configure_logging
+from src.core.config import initialize_config
+from src.core.exceptions import ThalosError
+
+def main():
+    # Configure logging
+    configure_logging(level='INFO', log_file='./logs/thalos.log')
+    
+    # Load configuration
+    config = initialize_config('./config/thalos.ini')
+    
+    # Create and boot CIS
+    cis = CIS()
+    
+    if not cis.boot():
+        print("Boot failed")
+        return 1
+        
+    try:
+        # Access CIS-owned subsystems
+        memory = cis.get_memory()
+        codegen = cis.get_codegen()
+        
+        # Use memory
+        memory.store("app_name", "Thalos Prime")
+        memory.store("version", "1.0.0")
+        
+        # Use codegen
+        code = codegen.generate_class(
+            "DataProcessor",
+            methods=["process", "validate", "export"]
+        )
+        print(code)
+        
+        # Check status
+        status = cis.status()
+        print(f"System: {status['status']}")
+        
+        # Checkpoint
+        checkpoint = cis.checkpoint()
+        print(f"State checkpointed: {len(checkpoint)} keys")
+        
+    except ThalosError as e:
+        print(f"Error: {e}")
+        return 1
+        
+    finally:
+        # Always cleanup
+        cis.shutdown()
+        
+    return 0
+
+if __name__ == "__main__":
+    exit(main())
+```
+
+---
+
+**For more information, see:**
+- [README.md](../README.md) - System overview and quick start
+- [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) - Implementation details
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture
+
+**Copyright © 2026 Tony Ray Macier III. All rights reserved.**

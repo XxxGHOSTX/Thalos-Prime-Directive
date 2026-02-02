@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 © 2026 Tony Ray Macier III. All rights reserved.
 
@@ -14,149 +13,201 @@ Thalos Prime™ is a proprietary system.
 """
 
 """
-Thalos Prime v1.0 - Configuration Module
+Thalos Prime - Configuration Management
 
-Provides configuration management for the Thalos Prime system.
-Reads from config/thalos.conf with deterministic default values.
+INI-based configuration with validation and type coercion.
+Supports environment variable overrides and defaults.
 """
 
 import os
 import configparser
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional, Union
+from pathlib import Path
+
+from .exceptions import ConfigurationError, ValidationError
 
 
-class ThalosConfig:
+class ConfigManager:
     """
-    Configuration manager for Thalos Prime
+    Configuration manager for Thalos Prime.
     
-    Provides:
-    - INI file parsing
-    - Default value handling
-    - Type conversion
-    - Section-based organization
+    Loads configuration from INI files with support for:
+    - Environment variable overrides (THALOS_SECTION_KEY)
+    - Type coercion (str, int, float, bool)
+    - Default values
+    - Validation
     """
-    
-    # Default configuration values
-    DEFAULTS: Dict[str, Dict[str, Any]] = {
-        'system': {
-            'version': '1.0',
-            'name': 'ThalosPrime'
-        },
-        'cis': {
-            'enabled': True
-        },
-        'memory': {
-            'enabled': True
-        },
-        'interfaces': {
-            'cli_enabled': True,
-            'api_enabled': True
-        },
-        'codegen': {
-            'deterministic': True
-        }
-    }
     
     def __init__(self, config_path: Optional[str] = None):
         """
-        Initialize configuration
+        Initialize configuration manager.
         
         Args:
-            config_path: Path to config file (optional)
+            config_path: Path to config file. If None, uses default locations:
+                         1. ./config/thalos.ini
+                         2. ./thalos.ini
+                         3. Built-in defaults only
         """
         self.config = configparser.ConfigParser()
-        self.config_path = config_path
+        self.config_path: Optional[Path] = None
+        self._defaults = self._get_builtin_defaults()
         
-        # Apply defaults
-        for section, values in self.DEFAULTS.items():
-            if not self.config.has_section(section):
-                self.config.add_section(section)
-            for key, value in values.items():
-                self.config.set(section, key, str(value))
-        
-        # Load config file if provided
-        if config_path and os.path.exists(config_path):
-            self.load(config_path)
-    
-    def load(self, config_path: str) -> bool:
+        # Try to load from file
+        if config_path:
+            self._load_from_file(config_path)
+        else:
+            self._load_default_locations()
+            
+    def _get_builtin_defaults(self) -> Dict[str, Dict[str, Any]]:
         """
-        Load configuration from file
+        Get built-in default configuration.
+        
+        Returns:
+            Dictionary of default values
+        """
+        return {
+            'system': {
+                'version': '1.0',
+                'debug': False,
+                'log_level': 'INFO',
+            },
+            'memory': {
+                'type': 'dict',
+                'max_size': 10000,
+                'persistence': False,
+                'persistence_path': './data/memory.json',
+            },
+            'codegen': {
+                'templates_dir': './templates',
+                'output_dir': './output',
+                'validate_syntax': True,
+            },
+            'cli': {
+                'prompt': 'thalos> ',
+                'history_size': 1000,
+            },
+            'api': {
+                'host': '0.0.0.0',
+                'port': 5000,
+                'debug': False,
+            },
+            'logging': {
+                'level': 'INFO',
+                'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                'file': './logs/thalos.log',
+                'console': True,
+            }
+        }
+        
+    def _load_from_file(self, config_path: str) -> None:
+        """
+        Load configuration from file.
         
         Args:
-            config_path: Path to configuration file
+            config_path: Path to config file
             
-        Returns:
-            bool: True if loaded successfully
+        Raises:
+            ConfigurationError: If file cannot be read
         """
-        if not os.path.exists(config_path):
-            return False
-        
+        path = Path(config_path)
+        if not path.exists():
+            raise ConfigurationError(f"Configuration file not found: {config_path}")
+            
         try:
             self.config.read(config_path)
-            self.config_path = config_path
-            return True
-        except configparser.Error:
-            return False
-    
-    def get(self, section: str, key: str, fallback: Any = None) -> str:
+            self.config_path = path
+        except Exception as e:
+            raise ConfigurationError(f"Failed to read configuration file: {e}")
+            
+    def _load_default_locations(self) -> None:
+        """Load configuration from default locations"""
+        default_paths = [
+            Path('./config/thalos.ini'),
+            Path('./thalos.ini'),
+        ]
+        
+        for path in default_paths:
+            if path.exists():
+                try:
+                    self.config.read(str(path))
+                    self.config_path = path
+                    return
+                except Exception:
+                    continue  # Try next location
+                    
+        # No config file found - use defaults only
+        
+    def get(self, section: str, key: str, default: Any = None, 
+            type_cast: type = str) -> Any:
         """
-        Get a configuration value
+        Get configuration value with environment override support.
+        
+        Precedence order:
+        1. Environment variable (THALOS_SECTION_KEY)
+        2. Config file value
+        3. Built-in default
+        4. Provided default parameter
         
         Args:
             section: Configuration section
             key: Configuration key
-            fallback: Default value if not found
+            default: Default value if not found
+            type_cast: Type to cast value to (str, int, float, bool)
             
         Returns:
-            Configuration value as string
+            Configuration value with appropriate type
         """
-        return self.config.get(section, key, fallback=fallback)
-    
-    def get_bool(self, section: str, key: str, fallback: bool = False) -> bool:
-        """
-        Get a boolean configuration value
-        
-        Args:
-            section: Configuration section
-            key: Configuration key
-            fallback: Default value if not found
+        # Check environment variable first
+        env_key = f"THALOS_{section.upper()}_{key.upper()}"
+        env_value = os.environ.get(env_key)
+        if env_value is not None:
+            return self._cast_value(env_value, type_cast)
             
-        Returns:
-            Configuration value as boolean
-        """
-        return self.config.getboolean(section, key, fallback=fallback)
-    
-    def get_int(self, section: str, key: str, fallback: int = 0) -> int:
-        """
-        Get an integer configuration value
-        
-        Args:
-            section: Configuration section
-            key: Configuration key
-            fallback: Default value if not found
+        # Check config file
+        if self.config.has_option(section, key):
+            value = self.config.get(section, key)
+            return self._cast_value(value, type_cast)
             
-        Returns:
-            Configuration value as integer
+        # Check built-in defaults
+        if section in self._defaults and key in self._defaults[section]:
+            return self._defaults[section][key]
+            
+        # Use provided default
+        return default
+        
+    def get_section(self, section: str) -> Dict[str, Any]:
         """
-        return self.config.getint(section, key, fallback=fallback)
-    
-    def get_section(self, section: str) -> Dict[str, str]:
-        """
-        Get all values in a section
+        Get all values in a section.
         
         Args:
-            section: Configuration section
+            section: Configuration section name
             
         Returns:
             Dictionary of key-value pairs
         """
-        if not self.config.has_section(section):
-            return {}
-        return dict(self.config.items(section))
-    
+        result = {}
+        
+        # Start with defaults
+        if section in self._defaults:
+            result.update(self._defaults[section])
+            
+        # Override with config file values
+        if self.config.has_section(section):
+            for key in self.config.options(section):
+                result[key] = self.config.get(section, key)
+                
+        # Apply environment overrides
+        env_prefix = f"THALOS_{section.upper()}_"
+        for env_key, env_value in os.environ.items():
+            if env_key.startswith(env_prefix):
+                key = env_key[len(env_prefix):].lower()
+                result[key] = env_value
+                
+        return result
+        
     def set(self, section: str, key: str, value: Any) -> None:
         """
-        Set a configuration value
+        Set configuration value.
         
         Args:
             section: Configuration section
@@ -165,56 +216,132 @@ class ThalosConfig:
         """
         if not self.config.has_section(section):
             self.config.add_section(section)
+            
         self.config.set(section, key, str(value))
-    
-    def save(self, config_path: Optional[str] = None) -> bool:
+        
+    def save(self, config_path: Optional[str] = None) -> None:
         """
-        Save configuration to file
+        Save configuration to file.
         
         Args:
-            config_path: Path to save to (uses loaded path if not specified)
+            config_path: Path to save to. If None, uses loaded path.
             
-        Returns:
-            bool: True if saved successfully
+        Raises:
+            ConfigurationError: If no path specified and no file was loaded
         """
         path = config_path or self.config_path
-        if not path:
-            return False
-        
+        if path is None:
+            raise ConfigurationError("No configuration file path specified")
+            
         try:
+            path = Path(path)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            
             with open(path, 'w') as f:
                 self.config.write(f)
-            return True
-        except IOError:
-            return False
-    
-    def to_dict(self) -> Dict[str, Dict[str, str]]:
+                
+        except Exception as e:
+            raise ConfigurationError(f"Failed to save configuration: {e}")
+            
+    def validate(self) -> bool:
         """
-        Export configuration as dictionary
+        Validate configuration.
+        
+        Ensures all required values are present and valid.
         
         Returns:
-            Nested dictionary of all configuration values
+            True if valid
+            
+        Raises:
+            ValidationError: If configuration is invalid
         """
-        result = {}
-        for section in self.config.sections():
-            result[section] = dict(self.config.items(section))
-        return result
+        # Check required sections
+        required_sections = ['system', 'memory', 'codegen']
+        for section in required_sections:
+            # Section can be in defaults or config file
+            has_section = (section in self._defaults or 
+                          self.config.has_section(section))
+            if not has_section:
+                raise ValidationError(f"Missing required section: {section}")
+                
+        # Validate specific values
+        log_level = self.get('system', 'log_level', type_cast=str)
+        valid_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+        if log_level not in valid_levels:
+            raise ValidationError(
+                f"Invalid log_level: {log_level}. Must be one of {valid_levels}"
+            )
+            
+        return True
+        
+    def _cast_value(self, value: str, type_cast: type) -> Any:
+        """
+        Cast string value to specified type.
+        
+        Args:
+            value: String value to cast
+            type_cast: Target type
+            
+        Returns:
+            Casted value
+            
+        Raises:
+            ValidationError: If cast fails
+        """
+        try:
+            if type_cast == bool:
+                # Handle boolean specially
+                if isinstance(value, bool):
+                    return value
+                return value.lower() in ('true', '1', 'yes', 'on')
+            elif type_cast == int:
+                return int(value)
+            elif type_cast == float:
+                return float(value)
+            else:
+                return str(value)
+        except (ValueError, AttributeError) as e:
+            raise ValidationError(
+                f"Failed to cast '{value}' to {type_cast.__name__}: {e}"
+            )
+            
+    def __repr__(self) -> str:
+        """String representation"""
+        path = self.config_path or "defaults"
+        sections = list(self._defaults.keys())
+        if self.config.sections():
+            sections.extend(self.config.sections())
+        sections = sorted(set(sections))
+        return f"ConfigManager(path={path}, sections={sections})"
 
 
-# Module-level convenience function
-def load_config(config_path: Optional[str] = None) -> ThalosConfig:
+# Global config instance
+_config_instance: Optional[ConfigManager] = None
+
+
+def get_config() -> ConfigManager:
     """
-    Load configuration from default or specified path
+    Get global configuration instance.
+    
+    Returns:
+        Global ConfigManager instance
+    """
+    global _config_instance
+    if _config_instance is None:
+        _config_instance = ConfigManager()
+    return _config_instance
+
+
+def initialize_config(config_path: Optional[str] = None) -> ConfigManager:
+    """
+    Initialize global configuration with specific path.
     
     Args:
-        config_path: Optional path to config file
+        config_path: Path to configuration file
         
     Returns:
-        ThalosConfig instance
+        Initialized ConfigManager instance
     """
-    if config_path is None:
-        # Try to find default config path
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        config_path = os.path.join(base_dir, 'config', 'thalos.conf')
-    
-    return ThalosConfig(config_path)
+    global _config_instance
+    _config_instance = ConfigManager(config_path)
+    return _config_instance
