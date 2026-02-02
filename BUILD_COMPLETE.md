@@ -204,10 +204,10 @@
 ### Monitoring (1 file)
 - src/monitoring/system_monitor.py
 
-### Tests (4 files)
-- test_system.py
-- test_integration.py
-- test_chatbot.py
+### Tests (organized structure)
+- test_system.py (quick health check)
+- tests/unit/ (unit tests for components)
+- tests/integration/ (integration tests: wetware, chatbot, lifecycle, system)
 - validate_build.py
 
 ### Deployment (3 files)
@@ -314,9 +314,8 @@ python thalos_prime.py web
 
 ### Run Tests
 ```bash
-python test_system.py       # System tests
-python test_integration.py  # Integration tests
-python test_chatbot.py      # Chatbot tests
+python test_system.py       # Quick system health check
+python -m pytest tests/     # Run full test suite (unit + integration)
 python validate_build.py    # Final validation
 ```
 
