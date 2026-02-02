@@ -255,9 +255,9 @@ predictions = analytics.predict_next("temp", steps=5)
    - Observe neural activity in the bottom-right visualizer
 
 4. **Use commands:**
-   - `/status` - Full system report with wetware health
+   - `/status` - Full system report with simulated wetware health
    - `/metrics` - Neural density, spike rates, lobe activity
-   - `/lobes` - Detailed organoid lobe analysis
+   - `/lobes` - Detailed organoid lobe analysis (simulation)
    - `/train` - Start adaptive training protocol
 
 ### CLI Usage
