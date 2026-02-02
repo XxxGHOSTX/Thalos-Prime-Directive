@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thalos Prime v3.0 | SBI Interface</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+        #canvas-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        #ui-overlay {
+            position: absolute; top: 20px; left: 20px; color: #0f0;
+            pointer-events: none; text-transform: uppercase; letter-spacing: 2px;
+            text-shadow: 0 0 5px #0f0; z-index: 1;
+        }
+        .telemetry-row { margin-bottom: 10px; font-size: 14px; }
+        .status-active { color: #0f0; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+    <canvas id="canvas-background"></canvas>
+    <div id="ui-overlay">
+        <div class="telemetry-row">SYSTEM: THALOS PRIME V3.0</div>
+        <div class="telemetry-row">STATUS: <span class="status-active">OPERATIONAL</span></div>
+        <div class="telemetry-row">SBI_LATENCY: <span id="lat">0.02ms</span></div>
+        <div class="telemetry-row">NEURAL_LOAD: <span id="load">14.2%</span></div>
+    </div>
+
+    <script>
+        // 3D-like Neural Grid using Canvas
+        const canvas = document.getElementById('canvas-background');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Particle system for neural grid
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                // Create particles in 3D space
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.z = Math.random() * 1000;
+                
+                // Velocity for rotation effect
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.vz = (Math.random() - 0.5) * 2;
+            }
+            
+            update() {
+                // Rotate particles in 3D space
+                this.x += this.vx;
+                this.y += this.vy;
+                this.z += this.vz;
+                
+                // Wrap around edges
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                if (this.z < 0 || this.z > 1000) this.reset();
+            }
+            
+            draw() {
+                // Calculate size based on z-depth (perspective)
+                const scale = 1000 / (1000 - this.z);
+                const size = 2 * scale;
+                const opacity = 0.3 + (this.z / 1000) * 0.7;
+                
+                ctx.fillStyle = `rgba(0, 255, 0, ${opacity})`;
+                ctx.shadowBlur = 3;
+                ctx.shadowColor = '#0f0';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Create particle system
+        const particles = [];
+        for (let i = 0; i < 5000; i++) {
+            particles.push(new Particle());
+        }
+        
+        let rotationAngle = 0;
+        
+        function animate() {
+            // Clear with fade effect for trails
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update and draw particles
+            rotationAngle += 0.001;
+            
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            
+            // Simulate real-time telemetry updates
+            if (Math.random() > 0.95) {
+                document.getElementById('lat').innerText = (Math.random() * 0.05).toFixed(3) + 'ms';
+                document.getElementById('load').innerText = (Math.random() * 20 + 10).toFixed(1) + '%';
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // Start animation
+        window.onload = animate;
+    </script>
+</body>
+</html>
