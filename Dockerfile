@@ -42,6 +42,9 @@ COPY --from=builder /build/create_thalos_bootstrap.sh ./
 # Create directories
 RUN mkdir -p /app/docs /app/tests /app/data /app/logs
 
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # Set Python path and add local packages to PATH
 ENV PYTHONPATH=/app/src
 ENV PATH=/root/.local/bin:$PATH
