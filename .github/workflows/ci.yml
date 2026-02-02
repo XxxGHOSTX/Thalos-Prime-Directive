@@ -23,8 +23,10 @@ jobs:
     - name: Display Python version
       run: python -c "import sys; print(sys.version)"
       
-    - name: Install test dependencies
-      run: pip install pytest
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
       
     - name: Run unit tests
       run: |
