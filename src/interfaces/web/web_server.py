@@ -163,7 +163,7 @@ def process_through_wetware(message: str) -> Dict[str, Any]:
 @app.route('/')
 def index():
     """Serve the main chatbot interface"""
-    return render_template('index.html')
+    return render_template('thalos_3d_interface.html')
 
 
 @app.route('/static/<path:path>')
