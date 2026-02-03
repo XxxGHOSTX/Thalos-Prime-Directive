@@ -345,15 +345,15 @@ class ThalosPrime:
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(
-        description='Thalos Prime v3.0 - Synthetic Biological Intelligence'
+        description='Thalos Prime v3.0 - Synthetic Biological Intelligence System (Web Deployment)'
     )
     
     parser.add_argument(
         'mode',
         nargs='?',
-        default='cli',
-        choices=['cli', 'web', 'status'],
-        help='Operating mode (default: cli)'
+        default='web',
+        choices=['web', 'status'],
+        help='Operating mode (default: web)'
     )
     
     parser.add_argument(
@@ -379,12 +379,6 @@ def main():
         '--no-ai',
         action='store_true',
         help='Disable AI systems'
-    )
-    
-    parser.add_argument(
-        'command',
-        nargs='*',
-        help='Command for CLI mode'
     )
     
     args = parser.parse_args()
@@ -413,15 +407,13 @@ def main():
     
     # Run requested mode
     try:
-        if args.mode == 'web':
-            return thalos.run_web_server(args.host, args.port)
-        elif args.mode == 'status':
+        if args.mode == 'status':
             import json
             status = thalos.get_system_status()
             print(json.dumps(status, indent=2))
             return 0
-        else:  # cli
-            return thalos.run_cli(args.command)
+        else:  # web (default)
+            return thalos.run_web_server(args.host, args.port)
     finally:
         thalos.shutdown()
 
