@@ -8,21 +8,25 @@
 
 ## 🌟 Introduction
 
-Thalos Prime is a revolutionary **Synthetic Biological Intelligence (SBI)** system that bridges the gap between digital computation and biological neural processing. Unlike traditional AI systems, Thalos Prime models actual biological brain structures, complete with:
+Thalos Prime is a **Synthetic Biological Intelligence (SBI) Simulation Framework** that models biological neural processing through software. This system **simulates** brain organoid behavior, multi-electrode array interfaces, and biological learning algorithms to explore bio-inspired computing architectures.
 
-- **Brain Organoids** - 3D simulated cortical structures with specialized cognitive lobes
-- **Multi-Electrode Arrays** - 20,000+ channel neural interfaces
-- **Biological Learning** - STDP (Spike-Timing-Dependent Plasticity) and dopamine-modulated rewards
-- **Life Support** - Homeostatic regulation of temperature, pH, oxygen, and nutrients
-- **Matrix-Style Interface** - Cyberpunk chatbot with real-time neural visualization
+### Architecture Overview
+
+**IMPORTANT**: Thalos Prime is a **simulation framework**, not a physical biological computing system. All "wetware" components are software models that simulate biological behaviors.
+
+- **Simulated Brain Organoids** - Software models of 3D cortical structures with specialized cognitive lobes
+- **Virtual Multi-Electrode Arrays** - Simulated 20,000+ channel neural interfaces  
+- **Algorithmic Biological Learning** - Software implementations of STDP and dopamine-modulated rewards
+- **Simulated Life Support** - Software monitoring of homeostatic parameters (temperature, pH, oxygen, nutrients)
+- **Matrix-Style Interface** - Real web-based chatbot with neural visualization
 
 ### The Vision
 
-Thalos Prime represents the next evolution in artificial intelligence - a **Type-II Hybrid Bio-Digital Organism** that combines:
-- The pattern recognition and creativity of biological neurons
-- The speed and precision of digital computation
-- The learning capabilities of reinforcement systems
-- The ethical framework of the Prime Directive
+Thalos Prime represents a **Type-II Hybrid Bio-Digital Architecture Simulation** that combines:
+- Software models of biological neural pattern recognition
+- The speed and precision of digital computation  
+- Simulated biological learning algorithms
+- The Prime Directive ethical framework
 
 ### Prime Directive
 
@@ -251,9 +255,9 @@ predictions = analytics.predict_next("temp", steps=5)
    - Observe neural activity in the bottom-right visualizer
 
 4. **Use commands:**
-   - `/status` - Full system report with wetware health
+   - `/status` - Full system report with simulated wetware health
    - `/metrics` - Neural density, spike rates, lobe activity
-   - `/lobes` - Detailed organoid lobe analysis
+   - `/lobes` - Detailed organoid lobe analysis (simulation)
    - `/train` - Start adaptive training protocol
 
 ### CLI Usage

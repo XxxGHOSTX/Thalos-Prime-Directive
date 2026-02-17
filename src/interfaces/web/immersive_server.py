@@ -12,6 +12,7 @@ Serves the immersive chatbot interface with unrestricted AI capabilities.
 
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
+from datetime import datetime
 import sys
 import os
 
@@ -149,8 +150,6 @@ def execute_code():
 
 
 if __name__ == '__main__':
-    from datetime import datetime
-    
     print("=" * 70)
     print("THALOS PRIME - SYNTHETIC BIOLOGICAL INTELLIGENCE")
     print("Unrestricted Interface Active")

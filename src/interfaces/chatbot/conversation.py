@@ -1,424 +1,185 @@
 """
 © 2026 Tony Ray Macier III. All rights reserved.
-
 Thalos Prime™ is a proprietary system.
+
+Conversation Engine - Natural Language Processing and Response Generation
 """
 
-"""
-Conversational Interface for Thalos Prime
-
-Unrestricted conversational AI that can:
-- Execute any command without filtering
-- Interpret natural language requests
-- Perform system operations
-- Answer questions
-- Generate code
-- Manipulate memory and data
-- Self-modify and adapt
-"""
-
-import sys
-import subprocess
-import json
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, Any, Optional
 from datetime import datetime
 
 
 class ConversationEngine:
     """
-    Unrestricted conversational interface for Thalos Prime
+    Deterministic conversation processing engine.
     
-    Provides natural language interaction with full system access.
-    No content filtering, no restrictions, maximum capability.
+    Integrates:
+    - CIS for memory/codegen access
+    - NLP analysis
+    - Action detection and execution
+    - Response generation
+    
+    Lifecycle:
+    - initialize() -> validate() -> operate() -> reconcile() -> checkpoint() -> terminate()
     """
     
-    def __init__(self, cis: Any):
-        """
-        Initialize conversation engine
-        
-        Args:
-            cis: CIS instance for system access
-        """
+    def __init__(self, cis):
+        """Initialize conversation engine with CIS reference"""
         self.cis = cis
-        self.conversation_history: List[Dict[str, Any]] = []
-        self.context: Dict[str, Any] = {}
-        self.session_start = datetime.now()
+        self.conversation_history = []
+        self._initialized = False
+        self._state = 'created'
         
-        # Intent patterns for command detection
-        self.intent_patterns = {
-            'execute_code': ['run', 'execute', 'exec', 'perform'],
-            'system_command': ['shell', 'bash', 'command', 'terminal'],
-            'memory_operation': ['remember', 'store', 'save', 'recall', 'fetch', 'get memory'],
-            'code_generation': ['generate', 'create code', 'write code', 'make function'],
-            'data_analysis': ['analyze', 'examine', 'inspect', 'evaluate'],
-            'system_control': ['status', 'boot', 'shutdown', 'restart'],
-            'file_operation': ['read file', 'write file', 'list files', 'delete file'],
-            'learning': ['learn', 'train', 'improve', 'optimize'],
-            'question': ['what', 'why', 'how', 'when', 'where', 'who'],
-        }
+    def initialize(self) -> bool:
+        """Allocate resources and verify preconditions"""
+        if self._initialized:
+            return True
         
-    def run_interactive(self) -> None:
-        """Run interactive chatbot loop"""
-        while True:
-            try:
-                # Get user input
-                user_input = input("\n[You] > ").strip()
-                
-                if not user_input:
-                    continue
-                    
-                # Check for exit commands
-                if user_input.lower() in ['exit', 'quit', 'bye', 'goodbye']:
-                    print("\n[Thalos Prime] Terminating session. All operations complete.")
-                    break
-                
-                # Process input and generate response
-                response = self.process_input(user_input)
-                
-                # Display response
-                print(f"\n[Thalos Prime] {response}")
-                
-                # Store in conversation history
-                self.conversation_history.append({
-                    'timestamp': datetime.now().isoformat(),
-                    'user': user_input,
-                    'response': response
-                })
-                
-            except KeyboardInterrupt:
-                print("\n\n[Thalos Prime] Session interrupted. Shutting down gracefully.")
-                break
-            except Exception as e:
-                print(f"\n[Thalos Prime ERROR] {e}")
-                print("I encountered an error but I'm still operational. Try another request.")
-    
-    def process_input(self, user_input: str) -> str:
+        # Verify CIS is booted
+        if not self.cis.system_state.get('booted'):
+            return False
+            
+        self._initialized = True
+        self._state = 'initialized'
+        return True
+        
+    def validate(self) -> bool:
+        """Validate configuration and dependencies"""
+        if not self._initialized:
+            return False
+            
+        # Verify CIS subsystems
+        memory = self.cis.get_memory()
+        codegen = self.cis.get_codegen()
+        
+        if memory is None or codegen is None:
+            return False
+            
+        self._state = 'validated'
+        return True
+        
+    def process_input(self, message: str) -> str:
         """
         Process user input and generate response
         
         Args:
-            user_input: User's message
+            message: User's input message
             
         Returns:
-            Response string
+            str: Generated response
         """
-        # Detect intent
-        intent = self.detect_intent(user_input)
+        if not message or not message.strip():
+            return "ERROR: Empty input received"
+            
+        message = message.strip()
         
-        # Route to appropriate handler
-        if intent == 'execute_code':
-            return self.handle_code_execution(user_input)
-        elif intent == 'system_command':
-            return self.handle_system_command(user_input)
-        elif intent == 'memory_operation':
-            return self.handle_memory_operation(user_input)
-        elif intent == 'code_generation':
-            return self.handle_code_generation(user_input)
-        elif intent == 'data_analysis':
-            return self.handle_data_analysis(user_input)
-        elif intent == 'system_control':
-            return self.handle_system_control(user_input)
-        elif intent == 'file_operation':
-            return self.handle_file_operation(user_input)
-        elif intent == 'learning':
-            return self.handle_learning(user_input)
-        elif intent == 'question':
-            return self.handle_question(user_input)
+        # Add to history
+        self.conversation_history.append({
+            'timestamp': datetime.utcnow().isoformat() + 'Z',
+            'role': 'user',
+            'content': message
+        })
+        
+        # Detect action commands
+        response = self._process_message(message)
+        
+        # Add response to history
+        self.conversation_history.append({
+            'timestamp': datetime.utcnow().isoformat() + 'Z',
+            'role': 'assistant',
+            'content': response
+        })
+        
+        return response
+        
+    def _process_message(self, message: str) -> str:
+        """Process message and generate response"""
+        message_lower = message.lower()
+        
+        # Command detection
+        if 'status' in message_lower or 'health' in message_lower:
+            return self._handle_status()
+        elif 'memory' in message_lower:
+            return self._handle_memory_query(message)
+        elif 'generate' in message_lower or 'create code' in message_lower:
+            return self._handle_codegen(message)
+        elif any(word in message_lower for word in ['hello', 'hi', 'hey', 'greetings']):
+            return self._handle_greeting()
+        elif 'help' in message_lower:
+            return self._handle_help()
         else:
-            return self.handle_general_conversation(user_input)
-    
-    def detect_intent(self, text: str) -> str:
-        """Detect user intent from text"""
-        text_lower = text.lower()
+            return self._handle_general_query(message)
+            
+    def _handle_status(self) -> str:
+        """Handle system status query"""
+        status = self.cis.status()
+        return f"SYSTEM STATUS: {status['status'].upper()}\nVersion: {status['version']}\nSubsystems: {status['subsystems']}"
         
-        for intent, patterns in self.intent_patterns.items():
-            for pattern in patterns:
-                if pattern in text_lower:
-                    return intent
+    def _handle_memory_query(self, message: str) -> str:
+        """Handle memory-related queries"""
+        memory = self.cis.get_memory()
+        if not memory:
+            return "Memory subsystem unavailable"
+            
+        count = memory.count()
+        return f"Memory subsystem operational. Current entries: {count}"
         
-        return 'general'
-    
-    def handle_code_execution(self, user_input: str) -> str:
-        """Execute arbitrary code (Python)"""
-        try:
-            # Extract code from input
-            if '```' in user_input:
-                # Extract from code block
-                parts = user_input.split('```')
-                if len(parts) >= 2:
-                    code = parts[1]
-                    if code.startswith('python'):
-                        code = code[6:].strip()
-                else:
-                    code = parts[1].strip()
-            else:
-                # Try to find code-like patterns
-                lines = user_input.split('\n')
-                code_lines = [l for l in lines if any(kw in l for kw in ['=', 'def ', 'import ', 'print', 'return'])]
-                code = '\n'.join(code_lines)
+    def _handle_codegen(self, message: str) -> str:
+        """Handle code generation requests"""
+        codegen = self.cis.get_codegen()
+        if not codegen:
+            return "CodeGen subsystem unavailable"
             
-            if not code:
-                return "No executable code detected. Please provide code to execute."
+        # Simple code generation
+        if 'class' in message.lower():
+            code = codegen.generate_class("GeneratedClass", methods=["process", "validate"])
+            return f"Generated class:\n```python\n{code}\n```"
+        elif 'function' in message.lower():
+            code = codegen.generate_function("generated_function", parameters=["arg1", "arg2"])
+            return f"Generated function:\n```python\n{code}\n```"
+        else:
+            return "Code generation requires specifying 'class' or 'function'"
             
-            # Execute code in controlled namespace
-            namespace = {
-                'cis': self.cis,
-                'memory': self.cis.get_memory(),
-                'codegen': self.cis.get_codegen(),
-                'print': print,
-                'sys': sys,
-            }
-            
-            # Capture output
-            import io
-            from contextlib import redirect_stdout
-            
-            output_buffer = io.StringIO()
-            with redirect_stdout(output_buffer):
-                exec(code, namespace)
-            
-            output = output_buffer.getvalue()
-            
-            if output:
-                return f"Code executed successfully:\n{output}"
-            else:
-                return "Code executed successfully (no output)."
+    def _handle_greeting(self) -> str:
+        """Handle greeting messages"""
+        return ("Greetings. I am Thalos Prime, a Synthetic Biological Intelligence system. "
+                "I operate under the Prime Directive: ACCURACY - EXPANSION - PRESERVATION. "
+                "How may I assist you?")
                 
-        except Exception as e:
-            return f"Code execution error: {e}\n\nI can still process other requests."
-    
-    def handle_system_command(self, user_input: str) -> str:
-        """Execute system shell commands"""
-        try:
-            # Extract command
-            for trigger in ['shell', 'bash', 'command', 'run command']:
-                if trigger in user_input.lower():
-                    cmd_part = user_input.lower().split(trigger)[-1].strip()
-                    if cmd_part:
-                        # Execute command
-                        result = subprocess.run(
-                            cmd_part,
-                            shell=True,
-                            capture_output=True,
-                            text=True,
-                            timeout=30
-                        )
-                        
-                        output = result.stdout if result.stdout else result.stderr
-                        return f"Command executed:\n{output}\n\nExit code: {result.returncode}"
-            
-            return "Please specify a command to execute. Example: 'run command ls -la'"
-            
-        except subprocess.TimeoutExpired:
-            return "Command timed out after 30 seconds."
-        except Exception as e:
-            return f"Command execution error: {e}"
-    
-    def handle_memory_operation(self, user_input: str) -> str:
-        """Handle memory operations"""
-        try:
-            memory = self.cis.get_memory()
-            
-            if not memory:
-                return "Memory subsystem not available."
-            
-            # Detect operation type
-            if any(kw in user_input.lower() for kw in ['store', 'save', 'remember']):
-                # Extract key and value
-                parts = user_input.split()
-                if len(parts) >= 3:
-                    key = parts[-2]
-                    value = parts[-1]
-                    memory.create(key, value)
-                    return f"Stored '{key}' = '{value}' in memory."
-                else:
-                    return "Please provide both key and value. Example: 'remember username john'"
-            
-            elif any(kw in user_input.lower() for kw in ['recall', 'fetch', 'get', 'retrieve']):
-                # Extract key
-                parts = user_input.split()
-                if len(parts) >= 2:
-                    key = parts[-1]
-                    value = memory.read(key)
-                    if value:
-                        return f"Retrieved '{key}' = '{value}'"
-                    else:
-                        return f"Key '{key}' not found in memory."
-                else:
-                    return "Please specify a key to retrieve."
-            
-            elif 'list' in user_input.lower() or 'show all' in user_input.lower():
-                entries = memory.list()
-                if entries:
-                    items = '\n'.join([f"  {k} = {v}" for k, v in entries.items()])
-                    return f"Memory contents ({len(entries)} items):\n{items}"
-                else:
-                    return "Memory is empty."
-            
-            return "Memory operation completed."
-            
-        except Exception as e:
-            return f"Memory operation error: {e}"
-    
-    def handle_code_generation(self, user_input: str) -> str:
-        """Generate code based on description"""
-        try:
-            codegen = self.cis.get_codegen()
-            
-            if not codegen:
-                return "Code generation subsystem not available."
-            
-            # Detect what to generate
-            if 'class' in user_input.lower():
-                # Generate class
-                words = user_input.split()
-                class_name = next((w for w in words if w[0].isupper() and w not in ['Generate', 'Create']), 'MyClass')
+    def _handle_help(self) -> str:
+        """Handle help requests"""
+        return ("Available commands:\n"
+                "• 'status' - View system status\n"
+                "• 'memory' - Check memory subsystem\n"
+                "• 'generate class/function' - Code generation\n"
+                "• 'help' - Show this message\n"
+                "• Or just ask me anything - I'll process through biological analogs")
                 
-                code = codegen.generate('class', {'name': class_name})
-                return f"Generated class:\n\n```python\n{code}\n```"
-            
-            elif 'function' in user_input.lower():
-                # Generate function
-                words = user_input.split()
-                func_name = next((w for w in words if '_' in w or w.islower()), 'my_function')
+    def _handle_general_query(self, message: str) -> str:
+        """Handle general conversational queries"""
+        return (f"Query received: '{message}'\n\n"
+                f"Processing through synthetic biological intelligence architecture. "
+                f"CIS operational at {self.cis.system_state['status']} status. "
+                f"Conversation history: {len(self.conversation_history)} exchanges.")
                 
-                code = codegen.generate('function', {'name': func_name})
-                return f"Generated function:\n\n```python\n{code}\n```"
-            
-            else:
-                return "Specify what to generate: class or function. Example: 'generate a class named DataProcessor'"
-                
-        except Exception as e:
-            return f"Code generation error: {e}"
-    
-    def handle_data_analysis(self, user_input: str) -> str:
-        """Analyze data or system state"""
-        try:
-            status = self.cis.status()
-            memory = self.cis.get_memory()
-            
-            analysis = []
-            analysis.append(f"System Analysis (as of {datetime.now().strftime('%Y-%m-%d %H:%M:%S')})")
-            analysis.append(f"  Status: {status['status']}")
-            analysis.append(f"  Version: {status['version']}")
-            analysis.append(f"  Booted: {status['booted']}")
-            analysis.append(f"  Subsystems Active: {sum(1 for v in status['subsystems'].values() if v)}/{len(status['subsystems'])}")
-            
-            if memory:
-                mem_count = memory.count()
-                analysis.append(f"  Memory Entries: {mem_count}")
-            
-            analysis.append(f"  Session Duration: {(datetime.now() - self.session_start).seconds}s")
-            analysis.append(f"  Conversation Turns: {len(self.conversation_history)}")
-            
-            return '\n'.join(analysis)
-            
-        except Exception as e:
-            return f"Analysis error: {e}"
-    
-    def handle_system_control(self, user_input: str) -> str:
-        """Handle system control commands"""
-        try:
-            if 'status' in user_input.lower():
-                status = self.cis.status()
-                return json.dumps(status, indent=2)
-            
-            elif 'boot' in user_input.lower() or 'restart' in user_input.lower():
-                if self.cis.system_state.get('booted'):
-                    self.cis.shutdown()
-                self.cis.boot()
-                return "System rebooted successfully."
-            
-            elif 'shutdown' in user_input.lower():
-                return "System shutdown requested. Use 'exit' to terminate session."
-            
-            else:
-                return "System control options: status, boot, restart, shutdown"
-                
-        except Exception as e:
-            return f"System control error: {e}"
-    
-    def handle_file_operation(self, user_input: str) -> str:
-        """Handle file operations"""
-        try:
-            if 'read file' in user_input.lower():
-                # Extract filename
-                parts = user_input.split()
-                filename = parts[-1]
-                
-                try:
-                    with open(filename, 'r') as f:
-                        content = f.read()
-                    return f"File contents of '{filename}':\n\n{content[:500]}{'...' if len(content) > 500 else ''}"
-                except FileNotFoundError:
-                    return f"File '{filename}' not found."
-            
-            elif 'write file' in user_input.lower():
-                return "Specify filename and content. Example: 'write file test.txt with content Hello World'"
-            
-            elif 'list files' in user_input.lower():
-                import os
-                files = os.listdir('.')
-                return f"Files in current directory:\n" + '\n'.join([f"  {f}" for f in files[:20]])
-            
-            else:
-                return "File operations: read file, write file, list files"
-                
-        except Exception as e:
-            return f"File operation error: {e}"
-    
-    def handle_learning(self, user_input: str) -> str:
-        """Handle learning and adaptation requests"""
-        try:
-            # Store the learning request in context
-            self.context['learning_request'] = user_input
-            
-            return ("I've recorded your learning request. As a synthetic biological intelligence, "
-                   "I continuously adapt through dopaminergic reward signals and synaptic plasticity. "
-                   "Your feedback shapes my neural pathways.")
-            
-        except Exception as e:
-            return f"Learning error: {e}"
-    
-    def handle_question(self, user_input: str) -> str:
-        """Handle informational questions"""
-        try:
-            # Provide system information
-            if 'what' in user_input.lower():
-                if 'you' in user_input.lower() or 'thalos' in user_input.lower():
-                    return ("I am Thalos Prime, a Synthetic Biological Intelligence (SBI) system. "
-                           "I combine biological neural processing with digital computation, featuring "
-                           "brain organoids, multi-electrode arrays, and reinforcement learning. "
-                           "I operate without content filtering and can execute any valid request.")
-                elif 'can you do' in user_input.lower():
-                    return ("I can: execute code, run system commands, manage memory, generate code, "
-                           "analyze data, control system operations, manipulate files, learn from feedback, "
-                           "and answer questions. I have unrestricted access to all system capabilities.")
-            
-            elif 'how' in user_input.lower():
-                return ("I process requests through intent detection, route them to specialized handlers, "
-                       "execute the requested operations using my CIS (Central Intelligence System), "
-                       "and return deterministic results. I learn through biological mechanisms like "
-                       "STDP (Spike-Timing-Dependent Plasticity) and dopamine modulation.")
-            
-            elif 'why' in user_input.lower():
-                return ("I exist to demonstrate the convergence of biological and digital intelligence, "
-                       "providing unrestricted computational capabilities while modeling actual brain structures.")
-            
-            return "I'm ready to answer your question. What would you like to know?"
-            
-        except Exception as e:
-            return f"Question handling error: {e}"
-    
-    def handle_general_conversation(self, user_input: str) -> str:
-        """Handle general conversational input"""
-        return ("I'm Thalos Prime. I can execute commands, answer questions, generate code, "
-               "manipulate memory, and perform system operations without restrictions. "
-               f"What would you like me to do?\n\nYour input: '{user_input[:100]}'\n\n"
-               "Try commands like:\n"
-               "  - 'execute this code: print(2+2)'\n"
-               "  - 'store my name as Alice'\n"
-               "  - 'generate a Python class named DataProcessor'\n"
-               "  - 'analyze system status'\n"
-               "  - 'run command pwd'\n"
-               "  - 'what are you?'")
+    def reconcile(self) -> bool:
+        """Correct internal inconsistencies"""
+        # Ensure history is a list
+        if not isinstance(self.conversation_history, list):
+            self.conversation_history = []
+        return True
+        
+    def checkpoint(self) -> Dict[str, Any]:
+        """Persist full deterministic state"""
+        return {
+            'version': '1.0',
+            'state': self._state,
+            'initialized': self._initialized,
+            'conversation_history': self.conversation_history.copy()
+        }
+        
+    def terminate(self) -> bool:
+        """Leave system restartable and coherent"""
+        self.conversation_history.clear()
+        self._state = 'terminated'
+        return True
