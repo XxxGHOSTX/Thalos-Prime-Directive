@@ -20,7 +20,7 @@ Before making an exclusive-title or enforcement assertion, reconcile the source 
 
 ## Publication status
 
-This repository is public. GitHub repository metadata records its creation as a public repository on **2 February 2026**. That date does not necessarily establish the first-publication date of every individual file or work, but it means the repository as a whole must not be described as wholly unpublished.
+This repository is public. GitHub repository metadata records its creation as a public repository on **2 February 2026**. That date does not necessarily establish the first-publication date of every individual file or work, but it means the repository as a whole must not be described as wholly unpublished. A separate public repository, [ThalosPrime-v1.0](https://github.com/XxxGHOSTX/ThalosPrime-v1.0), has an initial commit dated **27 December 2025**; that is an earlier public-disclosure lead for the broader project and should be reviewed work by work.
 
 Determine publication and disclosure dates separately for each work from repository history, releases, distributions, and other public disclosures. Public availability may affect trade-secret status and patent-disclosure analysis; obtain qualified advice before relying on either.
 
