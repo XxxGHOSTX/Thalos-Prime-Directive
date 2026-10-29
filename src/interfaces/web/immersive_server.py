@@ -70,6 +70,17 @@ def chat():
         # Process through conversation engine
         from interfaces.chatbot.conversation import ConversationEngine
         conversation = ConversationEngine(cis)
+
+        # The local conversation engine includes privileged code, shell, memory,
+        # file, learning, and system-control handlers. Do not expose those through
+        # the unauthenticated HTTP chat route. Keep a small, fail-closed allowlist.
+        allowed_remote_intents = {"general", "question", "code_generation"}
+        intent = conversation.detect_intent(message)
+        if intent not in allowed_remote_intents:
+            return jsonify({
+                "error": "This privileged action is disabled through the remote chat interface."
+            }), 403
+
         response = conversation.process_input(message)
         
         return jsonify({
