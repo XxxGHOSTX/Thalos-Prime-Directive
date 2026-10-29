@@ -21,7 +21,7 @@ Tony Ray Macier III
 
 ## Date of First Publication
 
-Unpublished (recommended for maximum control)
+UNVERIFIED - determine actual first-publication status and date from distribution and repository records before filing. This draft is not filing-ready.
 
 ## Nature of the Work
 
