@@ -57,3 +57,17 @@ def test_memory_route_requires_strong_bearer_token():
     guard_text = ast.unparse(guard)
     assert "THALOS_ADMIN_TOKEN" in guard_text
     assert "compare_digest" in guard_text
+
+def test_remote_chat_uses_safe_intent_allowlist_before_processing():
+    text, tree = _source_and_tree()
+    chat = next(
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "chat"
+    )
+    chat_text = ast.get_source_segment(text, chat)
+    assert chat_text is not None
+    assert 'allowed_remote_intents = {"general", "question", "code_generation"}' in chat_text
+    assert "intent = conversation.detect_intent(message)" in chat_text
+    assert "if intent not in allowed_remote_intents" in chat_text
+    assert "403" in chat_text
+    assert chat_text.index("detect_intent") < chat_text.index("process_input")
