@@ -1,3 +1,7 @@
+> **SECURITY OVERRIDE — 29 October 2026:** This document contains historical deployment claims and endpoint descriptions that are not verified as safe or production-ready. Do not deploy this legacy server publicly. The remediation branch disables unauthenticated code execution and memory export, disables chat pending further security work, binds to loopback, and disables debug mode. It is not yet merged or deployed. See [SECURITY_REMEDIATION_NOTICE.md](SECURITY_REMEDIATION_NOTICE.md).
+
+---
+
 # 🎯 THALOS PRIME v1.5 - DEPLOYMENT READY
 
 **© 2026 Tony Ray Macier III. All rights reserved.**
