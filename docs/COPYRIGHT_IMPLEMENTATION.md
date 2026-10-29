@@ -7,8 +7,8 @@ This document tracks the comprehensive copyright and licensing implementation fo
 Implemented complete copyright and proprietary licensing framework establishing:
 - **Sole ownership**: Tony Ray Macier III
 - **Jurisdiction**: United States, State of Utah
-- **Status**: Proprietary, unpublished
-- **Protection**: Full copyright notice on all materials
+- **Status**: Proprietary rights asserted; repository and some project materials are publicly accessible. Do not describe the project as wholly unpublished without a dated, work-by-work publication review.
+- **Protection**: Copyright notices appear on listed materials; verify authorship, contributions, license grants, and registration status before making enforcement claims.
 
 ## Files Created
 
@@ -91,7 +91,7 @@ All major documentation files now include copyright notice:
 ✅ **Sole ownership** - Exclusive property rights established  
 ✅ **Proprietary control** - No open-source licensing  
 ✅ **Non-open-source** - Explicit restrictions on all uses  
-✅ **Unpublished** - Stronger protection, maximum control  
+⚠️ **Public-disclosure review required** - Public repository availability must be reconciled with any claim that the software or documentation is unpublished. Public access does not by itself resolve copyright ownership, patent disclosure timing, or trade-secret status.  
 ✅ **Utah-governed** - Clear jurisdictional framework  
 ✅ **Trademark indication** - Thalos Prime™ marked as proprietary
 
