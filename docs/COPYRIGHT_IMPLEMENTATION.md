@@ -38,3 +38,9 @@ No infringer, copied protectable expression, unpaid contractual amount, or royal
 6. Separate patentable technical subject matter from copyright-protected expression, trade-secret know-how, and unprotectable ideas/functional concepts.
 
 The prior implementation notes below are retained as historical records only and should not be treated as current legal-status findings.
+
+## Earliest repository timestamp identified (not a verified first-public-disclosure date)
+
+GitHub repository metadata for [XxxGHOSTX/ThalosPrime-v1.0](https://github.com/XxxGHOSTX/ThalosPrime-v1.0) reports a creation timestamp of **2025-12-27T01:08:57Z**. Its [initial commit](https://github.com/XxxGHOSTX/ThalosPrime-v1.0/commit/44d2593619c28a54eb0bf25e6468ef04337d1221) has the same author/committer timestamp and is titled “Initial commit.” The repository is public at the time of this review.
+
+The available repository metadata does **not** establish whether the repository was public at creation or was made public later. This is the earliest dated repository evidence located in this review, not a verified first-public-disclosure date, patent-priority date, or conclusion about the legal effect of disclosure. Confirm historical visibility, releases, package distributions, external copies, and the actual material present before using this timestamp in a filing or legal opinion.
