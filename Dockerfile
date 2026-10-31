@@ -2,7 +2,7 @@
 # Multi-stage build for optimized image size
 
 # Build stage
-FROM python:3.12-slim as builder
+FROM python:3.15-slim as builder
 
 WORKDIR /build
 
@@ -23,7 +23,7 @@ RUN python -m py_compile src/**/*.py && \
     chmod +x create_thalos_bootstrap.sh
 
 # Production stage
-FROM python:3.12-slim
+FROM python:3.15-slim
 
 LABEL maintainer="Thalos Prime Team"
 LABEL version="1.0"
