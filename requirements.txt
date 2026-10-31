@@ -29,7 +29,7 @@ mypy>=1.5.0
 pylint>=2.17.0
 
 # Documentation
-sphinx>=6.0.0
+sphinx>=9.1.1
 sphinx-rtd-theme>=1.2.0
 
 # Database drivers for persistence (optional)
