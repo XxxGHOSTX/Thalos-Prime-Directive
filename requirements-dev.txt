@@ -28,4 +28,4 @@ ipdb>=0.13.13
 
 # Security Scanning
 bandit>=1.7.5
-safety>=2.3.5
+safety>=3.8.1
