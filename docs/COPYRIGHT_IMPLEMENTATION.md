@@ -1,6 +1,6 @@
 # Copyright and licensing status report — correction
 
-**Prepared:** 2026-10-29  
+**Prepared:** 2026-10-31  
 **Purpose:** distinguish the rights asserted by the maintainer from facts that still require documentary verification. This is a status memo, not legal advice or a filing receipt.
 
 ## Verified repository facts
@@ -37,7 +37,7 @@ No infringer, copied protectable expression, unpaid contractual amount, or royal
 5. Obtain trademark clearance before assuming “Thalos Prime” is available.
 6. Separate patentable technical subject matter from copyright-protected expression, trade-secret know-how, and unprotectable ideas/functional concepts.
 
-The prior implementation notes below are retained as historical records only and should not be treated as current legal-status findings.
+The prior implementation notes below are retained as historical records only and should not be treated as current legal-status findings. A separate file- and version-specific evidence register is maintained in the ThalosPrimeLibrary repository at [docs/IP_PROVENANCE_REGISTER.md](https://github.com/XxxGHOSTX/ThalosPrimeLibrary/blob/main/docs/IP_PROVENANCE_REGISTER.md); it is a working index, not legal proof.
 
 ## Earliest repository timestamp identified (not a verified first-public-disclosure date)
 
