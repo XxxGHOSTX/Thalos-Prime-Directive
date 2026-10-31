@@ -27,5 +27,5 @@ ipython>=8.14.0
 ipdb>=0.13.13
 
 # Security Scanning
-bandit>=1.7.5
+bandit>=1.9.4
 safety>=2.3.5
