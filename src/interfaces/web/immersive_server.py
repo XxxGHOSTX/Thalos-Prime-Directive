@@ -1,163 +1,80 @@
 """
-© 2026 Tony Ray Macier III. All rights reserved.
+Thalos Prime immersive web interface.
 
-Thalos Prime™ is a proprietary system.
+Security posture:
+- Binds to loopback only.
+- Debug mode is always disabled.
+- Chat, memory export, and arbitrary code execution HTTP endpoints are
+  intentionally disabled until authentication and execution isolation exist.
 """
 
-"""
-Enhanced Thalos Prime Web Server - Immersive Matrix Interface
-
-Serves the immersive chatbot interface with unrestricted AI capabilities.
-"""
-
-from flask import Flask, render_template, request, jsonify
-from flask_cors import CORS
-import sys
+from datetime import datetime
 import os
+import sys
+
+from flask import Flask, jsonify, render_template
+from flask_cors import CORS
 
 # Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from core.cis.controller import CIS
 
-app = Flask(__name__, 
-            template_folder='templates',
-            static_folder='static')
-CORS(app)
+app = Flask(
+    __name__,
+    template_folder="templates",
+    static_folder="static",
+)
+
+# CORS is a browser-origin control, not authentication. Keep the allowlist
+# explicit and reject wildcard configuration.
+_default_origins = "http://localhost:3000,http://127.0.0.1:3000"
+_raw_origins = os.environ.get("THALOS_CORS_ORIGINS", _default_origins)
+_allowed_origins = [origin.strip() for origin in _raw_origins.split(",") if origin.strip()]
+if not _allowed_origins or "*" in _allowed_origins:
+    raise RuntimeError("THALOS_CORS_ORIGINS must be a non-empty explicit origin allowlist")
+CORS(app, resources={r"/*": {"origins": _allowed_origins}})
 
 # Initialize Thalos Prime
 print("=" * 70)
-print("THALOS PRIME V1.5 - LIVE IMMERSIVE EDITION")
+print("THALOS PRIME - LOOPBACK-ONLY INTERFACE")
 print("=" * 70)
 print("Initializing CIS...")
 cis = CIS()
 cis.boot()
-print("✓ CIS operational")
-print("✓ Web server ready")
-print()
+print("CIS initialized")
+print("Web server ready")
 
 
-@app.route('/')
+@app.route("/")
 def index():
-    """Serve the immersive Matrix interface"""
-    return render_template('thalos_immersive.html')
+    """Serve the immersive interface."""
+    return render_template("thalos_immersive.html")
 
 
-@app.route('/api/chat', methods=['POST'])
-def chat():
-    """
-    Handle unrestricted chat requests
-    
-    No content filtering, no restrictions.
-    Full system access.
-    """
-    try:
-        data = request.get_json()
-        message = data.get('message', '').strip()
-        
-        if not message:
-            return jsonify({'error': 'No message provided'}), 400
-        
-        # Process through conversation engine
-        from interfaces.chatbot.conversation import ConversationEngine
-        conversation = ConversationEngine(cis)
-        response = conversation.process_input(message)
-        
-        return jsonify({
-            'response': response,
-            'status': 'success',
-            'timestamp': datetime.now().isoformat()
-        })
-        
-    except Exception as e:
-        print(f"Chat error: {e}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            'response': f"CRITICAL_ERROR: {str(e)}\n\nI remain operational. Try another request.",
-            'status': 'error'
-        }), 500
-
-
-@app.route('/api/status', methods=['GET'])
-def get_status():
-    """Get system status"""
-    status = cis.status()
-    memory = cis.get_memory()
-    
+@app.route("/api/chat", methods=["POST"])
+def chat_disabled():
+    """Keep chat offline until authentication and execution isolation exist."""
     return jsonify({
-        'cis': status,
-        'memory_entries': memory.count() if memory else 0,
-        'system_health': 'OPERATIONAL',
-        'version': '1.5.0'
+        "error": "Chat API is temporarily disabled",
+        "status": "unavailable",
+        "reason": "Authentication and execution isolation are not yet implemented",
+    }), 503
+
+
+@app.route("/api/status", methods=["GET"])
+def get_status():
+    """Return non-sensitive system status."""
+    status = cis.status()
+    return jsonify({
+        "cis": status,
+        "system_health": "OPERATIONAL",
+        "version": "1.5.0",
     })
 
 
-@app.route('/api/memory', methods=['GET'])
-def get_memory():
-    """Get memory contents"""
-    try:
-        memory = cis.get_memory()
-        if not memory:
-            return jsonify({'entries': {}, 'count': 0})
-        
-        entries = memory.list()
-        return jsonify({
-            'entries': entries,
-            'count': len(entries)
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/execute', methods=['POST'])
-def execute_code():
-    """Execute arbitrary code (unrestricted)"""
-    try:
-        data = request.get_json()
-        code = data.get('code', '')
-        
-        if not code:
-            return jsonify({'error': 'No code provided'}), 400
-        
-        # Execute in controlled namespace
-        namespace = {
-            'cis': cis,
-            'memory': cis.get_memory(),
-            'codegen': cis.get_codegen(),
-        }
-        
-        import io
-        from contextlib import redirect_stdout
-        
-        output_buffer = io.StringIO()
-        with redirect_stdout(output_buffer):
-            exec(code, namespace)
-        
-        output = output_buffer.getvalue()
-        
-        return jsonify({
-            'output': output,
-            'status': 'success'
-        })
-        
-    except Exception as e:
-        return jsonify({
-            'output': str(e),
-            'status': 'error'
-        }), 500
-
-
-if __name__ == '__main__':
-    from datetime import datetime
-    
-    print("=" * 70)
-    print("THALOS PRIME - SYNTHETIC BIOLOGICAL INTELLIGENCE")
-    print("Unrestricted Interface Active")
-    print("=" * 70)
-    print(f"Status: {cis.status()['status']}")
-    print(f"Web Interface: http://localhost:8000")
-    print("=" * 70)
-    print()
-    
-    app.run(host='0.0.0.0', port=8000, debug=True)
+if __name__ == "__main__":
+    # This interface intentionally cannot bind to a public network address.
+    # Deploy behind a separately authenticated reverse proxy only after review.
+    print("Thalos Prime interface: http://127.0.0.1:8000")
+    app.run(host="127.0.0.1", port=8000, debug=False)

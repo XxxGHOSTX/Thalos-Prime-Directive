@@ -1,3 +1,7 @@
+> **SECURITY OVERRIDE — 29 October 2026:** The legacy immersive HTTP server has been hardened on the `security/disable-unsafe-remote-execution` branch. The unauthenticated `POST /api/execute` and `GET /api/memory` routes are removed, and `POST /api/chat` is disabled pending authentication and execution isolation. The server is loopback-only with debug mode disabled. The legacy endpoint examples below describe historical behavior and MUST NOT be used as deployment instructions. This branch is not yet merged or deployed. See [SECURITY_REMEDIATION_NOTICE.md](../SECURITY_REMEDIATION_NOTICE.md) for requirements and limitations.
+
+---
+
 # Thalos Prime API Reference
 
 **© 2026 Tony Ray Macier III. All rights reserved.**
