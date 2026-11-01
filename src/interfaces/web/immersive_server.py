@@ -10,10 +10,12 @@ Enhanced Thalos Prime Web Server - Immersive Matrix Interface
 Serves the immersive chatbot interface with unrestricted AI capabilities.
 """
 
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
-import sys
+import hmac
 import os
+import sys
 
 # Add parent directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -23,7 +25,14 @@ from core.cis.controller import CIS
 app = Flask(__name__, 
             template_folder='templates',
             static_folder='static')
-CORS(app)
+_raw_cors_origins = os.environ.get(
+    "THALOS_CORS_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000",
+)
+allowed_origins = [origin.strip() for origin in _raw_cors_origins.split(",") if origin.strip()]
+if not allowed_origins or "*" in allowed_origins:
+    raise RuntimeError("THALOS_CORS_ORIGINS must be an explicit origin allowlist; wildcard is prohibited")
+CORS(app, origins=allowed_origins, supports_credentials=False)
 
 # Initialize Thalos Prime
 print("=" * 70)
@@ -61,6 +70,17 @@ def chat():
         # Process through conversation engine
         from interfaces.chatbot.conversation import ConversationEngine
         conversation = ConversationEngine(cis)
+
+        # The local conversation engine includes privileged code, shell, memory,
+        # file, learning, and system-control handlers. Do not expose those through
+        # the unauthenticated HTTP chat route. Keep a small, fail-closed allowlist.
+        allowed_remote_intents = {"general", "question", "code_generation"}
+        intent = conversation.detect_intent(message)
+        if intent not in allowed_remote_intents:
+            return jsonify({
+                "error": "This privileged action is disabled through the remote chat interface."
+            }), 403
+
         response = conversation.process_input(message)
         
         return jsonify({
@@ -70,11 +90,9 @@ def chat():
         })
         
     except Exception as e:
-        print(f"Chat error: {e}")
-        import traceback
-        traceback.print_exc()
+        app.logger.exception("Chat processing failed")
         return jsonify({
-            'response': f"CRITICAL_ERROR: {str(e)}\n\nI remain operational. Try another request.",
+            'response': 'An internal error occurred processing the request.',
             'status': 'error'
         }), 500
 
@@ -93,9 +111,23 @@ def get_status():
     })
 
 
+def _admin_token_failure():
+    """Return an HTTP response unless a strong configured admin bearer token is valid."""
+    configured = os.environ.get("THALOS_ADMIN_TOKEN", "")
+    if len(configured.encode("utf-8")) < 32:
+        return jsonify({"error": "Memory endpoint disabled until THALOS_ADMIN_TOKEN is configured with at least 32 UTF-8 bytes"}), 503
+    authorization = request.headers.get("Authorization", "")
+    if not authorization.startswith("Bearer ") or not hmac.compare_digest(authorization[7:].strip(), configured):
+        return jsonify({"error": "Unauthorized"}), 401
+    return None
+
+
 @app.route('/api/memory', methods=['GET'])
 def get_memory():
-    """Get memory contents"""
+    """Get memory contents; requires a configured administrator bearer token."""
+    auth_failure = _admin_token_failure()
+    if auth_failure is not None:
+        return auth_failure
     try:
         memory = cis.get_memory()
         if not memory:
@@ -112,45 +144,14 @@ def get_memory():
 
 @app.route('/api/execute', methods=['POST'])
 def execute_code():
-    """Execute arbitrary code (unrestricted)"""
-    try:
-        data = request.get_json()
-        code = data.get('code', '')
-        
-        if not code:
-            return jsonify({'error': 'No code provided'}), 400
-        
-        # Execute in controlled namespace
-        namespace = {
-            'cis': cis,
-            'memory': cis.get_memory(),
-            'codegen': cis.get_codegen(),
-        }
-        
-        import io
-        from contextlib import redirect_stdout
-        
-        output_buffer = io.StringIO()
-        with redirect_stdout(output_buffer):
-            exec(code, namespace)
-        
-        output = output_buffer.getvalue()
-        
-        return jsonify({
-            'output': output,
-            'status': 'success'
-        })
-        
-    except Exception as e:
-        return jsonify({
-            'output': str(e),
-            'status': 'error'
-        }), 500
+    """Disabled: executing caller-provided Python in the web process is unsafe."""
+    return jsonify({
+        "error": "Remote code execution is disabled. Use a separately isolated, authenticated execution service.",
+        "status": "disabled",
+    }), 410
 
 
 if __name__ == '__main__':
-    from datetime import datetime
-    
     print("=" * 70)
     print("THALOS PRIME - SYNTHETIC BIOLOGICAL INTELLIGENCE")
     print("Unrestricted Interface Active")
@@ -160,4 +161,8 @@ if __name__ == '__main__':
     print("=" * 70)
     print()
     
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(
+        host=os.environ.get("THALOS_HOST", "127.0.0.1"),
+        port=int(os.environ.get("THALOS_PORT", "8000")),
+        debug=False,
+    )
