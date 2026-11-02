@@ -1,158 +1,46 @@
-# Copyright and Licensing Implementation Summary
+# Copyright and licensing status report — correction
 
-This document tracks the comprehensive copyright and licensing implementation for Thalos Prime.
+**Prepared:** 2026-10-31  
+**Purpose:** distinguish the rights asserted by the maintainer from facts that still require documentary verification. This is a status memo, not legal advice or a filing receipt.
 
-## Overview
+## Verified repository facts
 
-Implemented complete copyright and proprietary licensing framework establishing:
-- **Sole ownership**: Tony Ray Macier III
-- **Jurisdiction**: United States, State of Utah
-- **Status**: Proprietary, unpublished
-- **Protection**: Full copyright notice on all materials
+- Source code and documentation for Thalos Prime have been published in public GitHub repositories. Therefore, a blanket statement that all related materials are “unpublished” is not accurate without narrowing that statement to identified material that has never been disclosed.
+- The Thalos-Prime-Directive repository contains `THALOS-PRIME-LICENSE.txt`, which asserts proprietary restrictions. It does not, by itself, establish ownership of every file, dependency, contribution, or work in the broader Thalos Prime repository family.
+- Other repositories in the project family contain standard open-source license files, including MIT and Apache-2.0. Those repository-level grants and the actual per-file contribution/ownership record must be analyzed before making any blanket proprietary assertion.
+- A later notice cannot be assumed to withdraw a valid license grant already made for a distributed version. The effect of each license depends on its actual scope and applicable law.
+- The prior version of this document included broad “sole ownership,” “complete and enforceable,” and “proprietary, unpublished” language. Those were assertions, not independently verified legal conclusions.
+- The companion registration draft expressly states that the first-publication date is unverified. No U.S. Copyright Office registration number is verified in this repository review.
 
-## Files Created
+## What remains unverified
 
-### 1. Primary License File
-**File**: `THALOS-PRIME-LICENSE.txt`
-- Proprietary license with explicit restrictions
-- No default license grant
-- Comprehensive usage restrictions
-- Derivative works clause
-- Confidentiality requirements
-- Utah governing law
+No complete contributor/commit audit, signed assignment ledger, contractor agreement, work-made-for-hire instrument, Copyright Office receipt, patent application number, trademark registration number, or executed commercial license has been verified for the project as a whole. This report does not establish that no such records exist outside the materials reviewed.
 
-### 2. Ownership Declaration
-**File**: `OWNERSHIP.md`
-- Clear statement of sole authorship
-- Denial of implied licenses
-- Explicit ownership by Tony Ray Macier III
+The clause in the custom license purporting to deem every derivative work “work made for hire” must be reviewed by counsel. A sentence in a project license is not, by itself, proof that statutory work-made-for-hire requirements or ownership/assignment formalities have been satisfied.
 
-### 3. Copyright Registration Information
-**File**: `docs/COPYRIGHT_REGISTRATION.md`
-- Complete U.S. Copyright Office filing information
-- Work description and claimant details
-- Deposit copy specifications
-- Material inclusions/exclusions
+## Evidence to preserve
 
-## Copyright Notices Applied
+Keep dated copies of repository URLs, commits, pull requests, tags/releases, license versions, contributor records, contracts/assignments, first-disclosure evidence, copyright filings/receipts, trademark filings/receipts, and dated screenshots/hashes for any suspected infringement. Keep the original evidence unchanged and record the SHA-256 hashes of any exported files.
 
-### Source Code Files (14 files)
-All Python source files in `src/` directory now include the global copyright notice:
+## Correct posture going forward
 
-```python
-"""
-© 2026 Tony Ray Macier III. All rights reserved.
+Use a file-by-file chain-of-title and license ledger. Claim ownership only over original material personally authored or validly acquired, and identify third-party works, dependencies, contributions, pre-existing grants, and assigned rights separately. Copyright notices are useful attribution evidence but do not substitute for chain-of-title proof or registration records.
 
-Thalos Prime is an original proprietary software system, including but not limited to
-its source code, system architecture, internal logic descriptions, documentation,
-interfaces, diagrams, and design materials.
+No infringer, copied protectable expression, unpaid contractual amount, or royalty amount is established by this status memo. Do not assert infringement or a royalty debt until the specific work, rights, defendant/use, copying evidence, legal theory, and damages methodology have been documented and reviewed by counsel.
 
-Unauthorized reproduction, modification, distribution, public display, or use of
-this software or its associated materials is strictly prohibited without the
-express written permission of the copyright holder.
+## Required next actions
 
-Thalos Prime™ is a proprietary system.
-"""
-```
+1. Reconcile public/private repository versions and all current/historical license grants.
+2. Compile contributors and obtain signed assignments/agreements where legally appropriate.
+3. Verify actual first publication/disclosure dates from GitHub, releases, package registries, websites, and any external distribution.
+4. Decide with counsel which identifiable work(s) should be registered and submit accurate applications; retain the official receipts and registration numbers.
+5. Obtain trademark clearance before assuming “Thalos Prime” is available.
+6. Separate patentable technical subject matter from copyright-protected expression, trade-secret know-how, and unprotectable ideas/functional concepts.
 
-**Files Updated**:
-- `src/main.py`
-- `src/__init__.py`
-- `src/interfaces/__init__.py`
-- `src/interfaces/api/server.py`
-- `src/interfaces/api/__init__.py`
-- `src/interfaces/cli/cli.py`
-- `src/interfaces/cli/__init__.py`
-- `src/codegen/generator.py`
-- `src/codegen/__init__.py`
-- `src/core/__init__.py`
-- `src/core/cis/controller.py`
-- `src/core/cis/__init__.py`
-- `src/core/memory/storage.py`
-- `src/core/memory/__init__.py`
+The prior implementation notes below are retained as historical records only and should not be treated as current legal-status findings. A separate file- and version-specific evidence register is maintained in the ThalosPrimeLibrary repository at [docs/IP_PROVENANCE_REGISTER.md](https://github.com/XxxGHOSTX/ThalosPrimeLibrary/blob/main/docs/IP_PROVENANCE_REGISTER.md); it is a working index, not legal proof.
 
-### Documentation Files (8 files)
-All major documentation files now include copyright notice:
+## Earliest repository timestamp identified (not a verified first-public-disclosure date)
 
-**Files Updated**:
-- `README.md` (with license file references)
-- `docs/ARCHITECTURE.md`
-- `docs/DEPLOYMENT.md`
-- `docs/ENHANCEMENT_SUMMARY.md`
-- `docs/IMPLEMENTATION_SUMMARY.md`
-- `docs/MODULE_DEPENDENCIES.md`
-- `docs/ROADMAP.md`
-- `CONTRIBUTING.md`
+GitHub repository metadata for [XxxGHOSTX/ThalosPrime-v1.0](https://github.com/XxxGHOSTX/ThalosPrime-v1.0) reports a creation timestamp of **2025-12-27T01:08:57Z**. Its [initial commit](https://github.com/XxxGHOSTX/ThalosPrime-v1.0/commit/44d2593619c28a54eb0bf25e6468ef04337d1221) has the same author/committer timestamp and is titled “Initial commit.” The repository is public at the time of this review.
 
-## Legal Posture Established
-
-### Current Status
-✅ **Sole authorship** - Tony Ray Macier III identified as sole author  
-✅ **Sole ownership** - Exclusive property rights established  
-✅ **Proprietary control** - No open-source licensing  
-✅ **Non-open-source** - Explicit restrictions on all uses  
-✅ **Unpublished** - Stronger protection, maximum control  
-✅ **Utah-governed** - Clear jurisdictional framework  
-✅ **Trademark indication** - Thalos Prime™ marked as proprietary
-
-### Protection Layers
-
-1. **Copyright Notice** - On all files (automatic protection)
-2. **Proprietary License** - Explicit restrictions and requirements
-3. **Ownership Declaration** - Clear statement against implied licenses
-4. **Registration Ready** - Documentation prepared for U.S. Copyright Office
-
-## Future Steps (When Ready)
-
-### Immediate Options
-- File U.S. Copyright registration (forms ready in COPYRIGHT_REGISTRATION.md)
-- Maintain repository as private or controlled-access
-- Execute collaborator agreements if needed
-
-### Future Expansion
-- Trademark filing for "THALOS PRIME" (USPTO)
-- Commercial licensing tiers (if desired)
-- Entity transfer to LLC/IP holding company
-- Patent considerations for novel algorithms
-
-## Verification
-
-### Testing Status
-All tests continue to pass after copyright additions:
-- ✅ Unit tests: 57/57 passing
-- ✅ Integration tests: 12/12 passing
-- ✅ Total: 69/69 tests passing
-
-### File Integrity
-- Source code functionality: Unchanged
-- Documentation accuracy: Maintained
-- Build process: Unaffected
-- CI/CD pipeline: Operational
-
-## Compliance Notes
-
-### For Contributors
-All contributors must:
-1. Review THALOS-PRIME-LICENSE.txt before any contributions
-2. Sign written agreements for derivative works
-3. Acknowledge sole ownership by Tony Ray Macier III
-4. Not remove or alter copyright notices
-
-### For Users
-- No rights granted without explicit written authorization
-- Read THALOS-PRIME-LICENSE.txt for complete restrictions
-- Contact copyright holder for any permissions
-
-## Repository References
-
-- **Primary License**: [THALOS-PRIME-LICENSE.txt](../THALOS-PRIME-LICENSE.txt)
-- **Ownership Declaration**: [OWNERSHIP.md](../OWNERSHIP.md)
-- **Copyright Registration**: [COPYRIGHT_REGISTRATION.md](COPYRIGHT_REGISTRATION.md)
-- **Main Documentation**: [README.md](../README.md)
-
----
-
-**Implementation Date**: January 4, 2026  
-**Copyright Holder**: Tony Ray Macier III  
-**Status**: Complete and Enforceable  
-**Jurisdiction**: United States of America, State of Utah
+The available repository metadata does **not** establish whether the repository was public at creation or was made public later. This is the earliest dated repository evidence located in this review, not a verified first-public-disclosure date, patent-priority date, or conclusion about the legal effect of disclosure. Confirm historical visibility, releases, package distributions, external copies, and the actual material present before using this timestamp in a filing or legal opinion.
